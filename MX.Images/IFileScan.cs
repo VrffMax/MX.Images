@@ -4,6 +4,6 @@ namespace MX.Images
 {
     public interface IFileScan
     {
-        ReadOnlyCollection<FileModel> Handle(string file);
+        FileModel Handle(string file);
     }
 }

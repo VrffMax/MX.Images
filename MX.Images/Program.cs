@@ -13,9 +13,11 @@ namespace MX.Images
             var builder = new ContainerBuilder();
 
             builder.RegisterInstance(new Options()).As<IOptions>();
+            
             builder.RegisterType<FileScan>().As<IFileScan>();
             builder.RegisterType<DirectoryScan>().As<IDirectoryScan>();
             builder.RegisterType<RootScan>().As<IRootScan>();
+            builder.RegisterType<Repository>().As<IRepository>();
 
             _container = builder.Build();
         }
