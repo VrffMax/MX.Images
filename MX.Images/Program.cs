@@ -13,7 +13,8 @@ namespace MX.Images
             var builder = new ContainerBuilder();
 
             builder.RegisterInstance(new Options()).As<IOptions>();
-            
+
+            builder.RegisterType<Storage>().As<IStorage>();
             builder.RegisterType<FileScan>().As<IFileScan>();
             builder.RegisterType<DirectoryScan>().As<IDirectoryScan>();
             builder.RegisterType<RootScan>().As<IRootScan>();
@@ -31,7 +32,6 @@ namespace MX.Images
             Task.Run(() => _container.Resolve<IRootScan>().HandleAsync(
                     _container,
                     "/Users/Maxim/Pictures"))
-                .ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();
 

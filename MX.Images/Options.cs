@@ -1,11 +1,20 @@
+using System;
+using System.Collections.ObjectModel;
+
 namespace MX.Images
 {
     public class Options
         : IOptions
     {
         public Options() =>
-            SearchPattern = "*.jpg";
+            SearchPatterns = Array.AsReadOnly(new[]
+            {
+                "*.jpg",
+                "*.jpeg",
+                "*.png",
+                "*.gif"
+            });
 
-        public string SearchPattern { get; }
+        public ReadOnlyCollection<string> SearchPatterns { get; }
     }
 }

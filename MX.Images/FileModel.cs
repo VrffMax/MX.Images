@@ -8,9 +8,11 @@ namespace MX.Images
     {
         [BsonId] public ObjectId Id { get; set; }
 
-        public string MachineName { get; set; }
+        public string Machine { get; set; }
 
-        public string File { get; set; }
+        public string Path { get; set; }
+
+        public string Name { get; set; }
 
         public ReadOnlyCollection<FileModelTag> Tags { get; set; }
     }

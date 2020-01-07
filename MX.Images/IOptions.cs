@@ -1,7 +1,9 @@
+using System.Collections.ObjectModel;
+
 namespace MX.Images
 {
     public interface IOptions
     {
-        string SearchPattern { get; }
+        ReadOnlyCollection<string> SearchPatterns { get; }
     }
 }

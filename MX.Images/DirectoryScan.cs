@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MX.Images
@@ -22,13 +23,17 @@ namespace MX.Images
                 var directoriesTask = Task.Run(() =>
                     Array.AsReadOnly(Directory.GetDirectories(path)));
 
-                var filesTask = Task.Run(() =>
-                    Array.AsReadOnly(Directory.GetFiles(path, _options.SearchPattern)));
+                var fileTasks = _options.SearchPatterns.Select(searchPattern =>
+                    Task.Run(() => Directory.GetFiles(path, searchPattern))).ToArray();
 
-                await Task.WhenAll(directoriesTask, filesTask)
-                    .ConfigureAwait(false);
+                await Task.WhenAll(
+                    directoriesTask,
+                    Task.WhenAll(fileTasks));
 
-                return (directoriesTask.Result, filesTask.Result);
+                var files = Array.AsReadOnly(fileTasks.SelectMany(fileTask =>
+                    fileTask.Result).ToArray());
+
+                return (directoriesTask.Result, files);
             }
             catch (UnauthorizedAccessException)
             {
