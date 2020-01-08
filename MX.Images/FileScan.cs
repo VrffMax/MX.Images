@@ -1,5 +1,4 @@
 using System;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using MetadataExtractor;
@@ -9,9 +8,14 @@ namespace MX.Images
     public class FileScan
         : IFileScan
     {
+        private readonly IOptions _options;
+
+        public FileScan(IOptions options) =>
+            _options = options;
+
         public FileModel Handle(string file) => new FileModel
         {
-            Machine = Environment.MachineName,
+            Machine = _options.Machine,
             Path = Path.GetDirectoryName(file),
             Name = Path.GetFileName(file),
             Tags = Array.AsReadOnly(

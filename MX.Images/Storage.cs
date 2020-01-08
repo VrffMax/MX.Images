@@ -6,14 +6,13 @@ namespace MX.Images
     public class Storage
         : IStorage
     {
-        private const string DefaultMongoConnectionString = "mongodb://localhost:27017";
-
         // ReSharper disable once InconsistentNaming
         private const string MX = nameof(MX);
 
-        public Storage()
+        public Storage(IOptions options)
         {
-            var dataBase = new MongoClient(DefaultMongoConnectionString).GetDatabase(MX);
+            var dataBase = new MongoClient(options.MongoConnectionString)
+                .GetDatabase(MX);
 
             Images = new Lazy<IMongoCollection<FileModel>>(() =>
                 dataBase.GetCollection<FileModel>(nameof(IStorage.Images)));

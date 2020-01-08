@@ -6,7 +6,12 @@ namespace MX.Images
     public class Options
         : IOptions
     {
-        public Options() =>
+        public Options()
+        {
+            Machine = Environment.MachineName;
+
+            MongoConnectionString = "mongodb://localhost:27017";
+
             SearchPatterns = Array.AsReadOnly(new[]
             {
                 "*.jpg",
@@ -14,6 +19,11 @@ namespace MX.Images
                 "*.png",
                 "*.gif"
             });
+        }
+
+        public string Machine { get; }
+
+        public string MongoConnectionString { get; }
 
         public ReadOnlyCollection<string> SearchPatterns { get; }
     }
