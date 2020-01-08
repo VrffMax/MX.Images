@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 
@@ -27,15 +29,19 @@ namespace MX.Images
         {
             InitializeContainer();
 
+            if (args.Length != 1)
+            {
+                Console.WriteLine("Root images directory for scan required");
+                return;
+            }
+
             var tickCount = Environment.TickCount;
 
-            Task.Run(() => _container.Resolve<IRootScan>().HandleAsync(
-                    _container,
-                    "/Users/Maxim/Pictures"))
+            Task.Run(() => _container.Resolve<IRootScan>().HandleAsync(_container, args.First()))
                 .GetAwaiter()
                 .GetResult();
 
-            Console.WriteLine(Environment.TickCount - tickCount);
+            Console.WriteLine($"TickCount: {Environment.TickCount - tickCount}");
         }
     }
 }

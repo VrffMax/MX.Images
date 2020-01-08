@@ -10,6 +10,8 @@ namespace MX.Images
     {
         public async Task HandleAsync(IContainer container, string path)
         {
+            Console.WriteLine(path);
+
             var scan = await container.Resolve<IDirectoryScan>()
                 .HandleAsync(path);
 
