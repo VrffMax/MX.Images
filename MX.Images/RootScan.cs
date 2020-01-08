@@ -28,7 +28,9 @@ namespace MX.Images
                 Task.WhenAll(fileTasks));
 
             await container.Resolve<IRepository>()
-                .HandleAsync(Array.AsReadOnly(fileTasks.Select(fileTask => fileTask.Result).ToArray()));
+                .HandleAsync(Array.AsReadOnly(fileTasks
+                    .Where(fileTasks => fileTasks.Result != default)
+                    .Select(fileTask => fileTask.Result).ToArray()));
         }
     }
 }
