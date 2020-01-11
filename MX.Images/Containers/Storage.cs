@@ -1,7 +1,9 @@
 using System;
 using MongoDB.Driver;
+using MX.Images.Interfaces;
+using MX.Images.Models;
 
-namespace MX.Images
+namespace MX.Images.Containers
 {
     public class Storage
         : IStorage

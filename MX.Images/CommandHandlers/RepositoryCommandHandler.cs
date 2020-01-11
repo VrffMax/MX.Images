@@ -1,17 +1,23 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using MongoDB.Driver;
+using MX.Images.Commands;
+using MX.Images.Interfaces;
+using MX.Images.Models;
 
-namespace MX.Images
+namespace MX.Images.CommandHandlers
 {
-    public class Repository
-        : IRepository
+    public class RepositoryCommandHandler
+        : IRequestHandler<RepositoryCommand>
     {
         private readonly IStorage _storageFindInsert;
         private readonly IStorage _storageDelete;
 
-        public Repository(
+        public RepositoryCommandHandler(
             IStorage storageFindInsert,
             IStorage storageDelete)
         {
@@ -19,24 +25,26 @@ namespace MX.Images
             _storageDelete = storageDelete;
         }
 
-        public async Task HandleAsync(ReadOnlyCollection<FileModel> fileModels)
+        public async Task<Unit> Handle(RepositoryCommand request, CancellationToken cancellationToken)
         {
-            if (!fileModels.Any())
+            if (!request.Files.Any())
             {
-                return;
+                return Unit.Value;
             }
 
-            var storageImages = await GetStorageImages(fileModels);
+            var storageImages = await GetStorageImages(request.Files);
 
             await Task.WhenAll(
-                InsertNewImages(fileModels, storageImages),
-                DeleteNotExistsImages(fileModels, storageImages));
+                InsertNewImages(request.Files, storageImages),
+                DeleteNotExistsImages(request.Files, storageImages));
+            
+            return Unit.Value;
         }
 
-        private async Task<ReadOnlyCollection<FileModel>> GetStorageImages(ReadOnlyCollection<FileModel> fileModels)
+        private async Task<ReadOnlyCollection<FileModel>> GetStorageImages(ReadOnlyCollection<FileModel> files)
         {
-            var machine = fileModels.Select(fileModel => fileModel.Machine).First();
-            var path = fileModels.Select(fileModel => fileModel.Path).First();
+            var machine = files.Select(fileModel => fileModel.Machine).First();
+            var path = files.Select(fileModel => fileModel.Path).First();
 
             var findFilter = Builders<FileModel>.Filter.Where(fileModel => true
                                                                            && fileModel.Path == path

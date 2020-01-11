@@ -1,8 +1,12 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
+using MediatR;
+using MediatR.Extensions.Autofac.DependencyInjection;
+using MX.Images.Commands;
+using MX.Images.Containers;
+using MX.Images.Interfaces;
 
 namespace MX.Images
 {
@@ -15,32 +19,31 @@ namespace MX.Images
             var builder = new ContainerBuilder();
 
             builder.RegisterInstance(new Options()).As<IOptions>();
-
             builder.RegisterType<Storage>().As<IStorage>();
-            builder.RegisterType<FileScan>().As<IFileScan>();
-            builder.RegisterType<DirectoryScan>().As<IDirectoryScan>();
-            builder.RegisterType<RootScan>().As<IRootScan>();
-            builder.RegisterType<Repository>().As<IRepository>();
+            builder.AddMediatR(typeof(Program).Assembly);
 
             _container = builder.Build();
         }
 
-        private static void Main(string[] args)
+        private static Task Main(string[] args)
         {
             InitializeContainer();
 
             if (args.Length != 1)
             {
                 Console.WriteLine("Root images directory for scan required");
-                return;
+                return Task.CompletedTask;
             }
 
+            return SendRootScanCommand(args.First());
+        }
+
+        private static async Task SendRootScanCommand(string path)
+        {
             var tickCount = Environment.TickCount;
-
-            Task.Run(() => _container.Resolve<IRootScan>().HandleAsync(_container, args.First()))
-                .GetAwaiter()
-                .GetResult();
-
+            {
+                await _container.Resolve<IMediator>().Send(new RootScanCommand(path));
+            }
             Console.WriteLine($"TickCount: {Environment.TickCount - tickCount}");
         }
     }

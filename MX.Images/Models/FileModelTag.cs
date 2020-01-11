@@ -1,4 +1,4 @@
-namespace MX.Images
+namespace MX.Images.Models
 {
     public class FileModelTag
     {

@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace MX.Images
+namespace MX.Images.Interfaces
 {
     public interface IOptions
     {

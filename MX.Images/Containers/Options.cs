@@ -1,7 +1,8 @@
 using System;
 using System.Collections.ObjectModel;
+using MX.Images.Interfaces;
 
-namespace MX.Images
+namespace MX.Images.Containers
 {
     public class Options
         : IOptions
