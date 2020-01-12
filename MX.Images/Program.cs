@@ -40,10 +40,13 @@ namespace MX.Images
 
         private static async Task SendRootScanCommand(string path)
         {
+            var mediator = _container.Resolve<IMediator>();
+
             var tickCount = Environment.TickCount;
-            {
-                await _container.Resolve<IMediator>().Send(new RootScanCommand(path));
-            }
+
+            await mediator.Send(new RootScanCommand(path));
+            await mediator.Send(new RefactorCommand(path));
+
             Console.WriteLine($"TickCount: {Environment.TickCount - tickCount}");
         }
     }
