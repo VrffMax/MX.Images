@@ -44,7 +44,7 @@ namespace MX.Images
 
             var tickCount = Environment.TickCount;
 
-            await mediator.Send(new RootScanCommand(path));
+            // await mediator.Send(new RootScanCommand(path));
             await mediator.Send(new RefactorCommand(path));
 
             Console.WriteLine($"TickCount: {Environment.TickCount - tickCount}");
