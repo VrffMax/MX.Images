@@ -16,17 +16,17 @@ namespace MX.Images.CommandHandlers
         private readonly ReadOnlyCollection<(string Pattern, CultureInfo CultureInfo)> _dateFormats = Array.AsReadOnly(
             new[]
             {
-                ("ddd MMM dd HH:mm:ss zzz yyyy", CultureInfo.CurrentUICulture),
-                ("yyyy:MM:dd HH:mm:ss", CultureInfo.CurrentUICulture),
-                ("yyyy:MM:dd", CultureInfo.CurrentUICulture),
-                ("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.CurrentUICulture),
-                ("yyyy-MM-dd", CultureInfo.CurrentUICulture),
-                ("yyyy/MM/dd HH:mm:ss", CultureInfo.CurrentUICulture),
+                ("ddd MMM dd HH:mm:ss zzz yyyy", CultureInfo.CurrentCulture),
+                ("yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture),
+                ("yyyy:MM:dd", CultureInfo.InvariantCulture),
+                ("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture),
+                ("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                ("yyyy/MM/dd HH:mm:ss", CultureInfo.InvariantCulture),
                 ("yyyy:MM:dd h:mm:ss tt", CultureInfo.InvariantCulture),
-                ("yyyy:MM:dd HH:mm: s", CultureInfo.CurrentUICulture)
+                ("yyyy:MM:dd HH:mm: s", CultureInfo.InvariantCulture)
             });
 
-        private readonly ReadOnlyCollection<(Regex Regex, Func<string, DateTime> Parse)> _dateFuncs =
+        private readonly ReadOnlyCollection<(Regex Regex, Func<string, DateTime> Parse)> _dateExpressions =
             Array.AsReadOnly(new (Regex, Func<string, DateTime>)[]
             {
                 (
@@ -61,8 +61,8 @@ namespace MX.Images.CommandHandlers
 
             var dateTimeTags = request.File.Tags
                 .Where(tag => true
-                              && tag.Name.ToLower().Contains("date")
-                              && !new[] {string.Empty, "0", "0000:00:00 00:00:00"}.Contains(tag.Description))
+                              && tag.Name.Contains("Date")
+                              && !new[] { string.Empty, "0", "0000:00:00 00:00:00" }.Contains(tag.Description))
                 .Select(tag =>
                 {
                     var dateTime = default(DateTime);
@@ -78,7 +78,7 @@ namespace MX.Images.CommandHandlers
                         return dateTime;
                     }
 
-                    var dateFunc = _dateFuncs.FirstOrDefault(item =>
+                    var dateFunc = _dateExpressions.FirstOrDefault(item =>
                         item.Regex.IsMatch(tag.Description));
 
                     if (dateFunc != default)
@@ -96,7 +96,7 @@ namespace MX.Images.CommandHandlers
                 ? $"{fileMakeTag.Description.Trim()} {fileModelTag.Description.Trim()}"
                 : "NoName";
 
-            Console.WriteLine($"{makeModelDirectory} - {dateTimeTags.Min()} - {fileNameTag.Description}");
+            // Console.WriteLine($"{makeModelDirectory} - {dateTimeTags.Min()} - {fileNameTag.Description}");
 
             return Task.FromResult(Unit.Value);
         }
