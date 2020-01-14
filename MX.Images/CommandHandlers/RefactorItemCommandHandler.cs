@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -12,7 +13,37 @@ namespace MX.Images.CommandHandlers
     public class RefactorItemCommandHandler
         : IRequestHandler<RefactorItemCommand>
     {
-        private readonly Regex gpsDateRegex = new Regex(@"^\d{4}:\d{2}:\d{3}$", RegexOptions.Compiled | RegexOptions.Multiline);
+        private readonly ReadOnlyCollection<(string Pattern, CultureInfo CultureInfo)> _dateFormats = Array.AsReadOnly(
+            new[]
+            {
+                ("ddd MMM dd HH:mm:ss zzz yyyy", CultureInfo.CurrentUICulture),
+                ("yyyy:MM:dd HH:mm:ss", CultureInfo.CurrentUICulture),
+                ("yyyy:MM:dd", CultureInfo.CurrentUICulture),
+                ("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.CurrentUICulture),
+                ("yyyy-MM-dd", CultureInfo.CurrentUICulture),
+                ("yyyy/MM/dd HH:mm:ss", CultureInfo.CurrentUICulture),
+                ("yyyy:MM:dd h:mm:ss tt", CultureInfo.InvariantCulture),
+                ("yyyy:MM:dd HH:mm: s", CultureInfo.CurrentUICulture)
+            });
+
+        private readonly ReadOnlyCollection<(Regex Regex, Func<string, DateTime> Parse)> _dateFuncs =
+            Array.AsReadOnly(new (Regex, Func<string, DateTime>)[]
+            {
+                (
+                    new Regex(
+                        @"^\d{4}:\d{2}:\d{3}$",
+                        RegexOptions.Compiled | RegexOptions.Multiline),
+                    value =>
+                    {
+                        var dateParts = value.Split(new[] {':'});
+
+                        var dateTime = new DateTime(int.Parse(dateParts[0]), 1, 1)
+                            .AddDays(int.Parse(dateParts[2]) - 1);
+
+                        return dateTime;
+                    }
+                )
+            });
 
         public Task<Unit> Handle(RefactorItemCommand request, CancellationToken cancellationToken)
         {
@@ -28,102 +59,31 @@ namespace MX.Images.CommandHandlers
                                                              && tag.Directory == "File"
                                                              && tag.Name == "File Name");
 
-            var makeModelDirectory = fileMakeTag?.Description != default && fileModelTag?.Description != default
-                ? $"{fileMakeTag.Description.Trim()} {fileModelTag.Description.Trim()}"
-                : "NoName";
-
             var dateTimeTags = request.File.Tags
                 .Where(tag => true
-                    && tag.Name.ToLower().Contains("date")
-                    && !new[] { string.Empty, "0", "0000:00:00 00:00:00" }.Contains(tag.Description))
+                              && tag.Name.ToLower().Contains("date")
+                              && !new[] {string.Empty, "0", "0000:00:00 00:00:00"}.Contains(tag.Description))
                 .Select(tag =>
                 {
                     var dateTime = default(DateTime);
 
-                    if (DateTime.TryParseExact(
-                        tag.Description,
-                        "ddd MMM dd HH:mm:ss zzz yyyy",
-                        CultureInfo.CurrentUICulture,
-                        DateTimeStyles.None,
-                        out dateTime))
+                    if (_dateFormats.Any(dateFormat =>
+                        DateTime.TryParseExact(
+                            tag.Description,
+                            dateFormat.Pattern,
+                            dateFormat.CultureInfo,
+                            DateTimeStyles.None,
+                            out dateTime)))
                     {
                         return dateTime;
                     }
 
-                    if (DateTime.TryParseExact(
-                        tag.Description,
-                        "yyyy:MM:dd HH:mm:ss",
-                        CultureInfo.CurrentUICulture,
-                        DateTimeStyles.None,
-                        out dateTime))
-                    {
-                        return dateTime;
-                    }
+                    var dateFunc = _dateFuncs.FirstOrDefault(item =>
+                        item.Regex.IsMatch(tag.Description));
 
-                    if (DateTime.TryParseExact(
-                        tag.Description,
-                        "yyyy:MM:dd",
-                        CultureInfo.CurrentUICulture,
-                        DateTimeStyles.None,
-                        out dateTime))
+                    if (dateFunc != default)
                     {
-                        return dateTime;
-                    }
-
-                    if (DateTime.TryParseExact(
-                        tag.Description,
-                        "yyyy-MM-ddTHH:mm:sszzz",
-                        CultureInfo.CurrentUICulture,
-                        DateTimeStyles.None,
-                        out dateTime))
-                    {
-                        return dateTime;
-                    }
-
-                    if (DateTime.TryParseExact(
-                        tag.Description,
-                        "yyyy-MM-dd",
-                        CultureInfo.CurrentUICulture,
-                        DateTimeStyles.None,
-                        out dateTime))
-                    {
-                        return dateTime;
-                    }
-
-                    if (DateTime.TryParseExact(
-                        tag.Description,
-                        "yyyy/MM/dd HH:mm:ss",
-                        CultureInfo.CurrentUICulture,
-                        DateTimeStyles.None,
-                        out dateTime))
-                    {
-                        return dateTime;
-                    }
-
-                    if (DateTime.TryParseExact(
-                        tag.Description,
-                        "yyyy:MM:dd h:mm:ss tt",
-                        CultureInfo.InvariantCulture,
-                        DateTimeStyles.None,
-                        out dateTime))
-                    {
-                        return dateTime;
-                    }
-
-                    if (DateTime.TryParseExact(
-                        tag.Description,
-                        "yyyy:MM:dd HH:mm: s",
-                        CultureInfo.CurrentUICulture,
-                        DateTimeStyles.None,
-                        out dateTime))
-                    {
-                        return dateTime;
-                    }
-
-                    if (gpsDateRegex.IsMatch(tag.Description))
-                    {
-                        var gpsDateParts = tag.Description.Split(new[] { ':' });
-                        dateTime = new DateTime(int.Parse(gpsDateParts[0]), 1, 1).AddDays(int.Parse(gpsDateParts[2]) - 1);
+                        dateTime = dateFunc.Parse(tag.Description);
                         return dateTime;
                     }
 
@@ -131,6 +91,10 @@ namespace MX.Images.CommandHandlers
                     return dateTime;
                 })
                 .ToArray();
+
+            var makeModelDirectory = fileMakeTag?.Description != default && fileModelTag?.Description != default
+                ? $"{fileMakeTag.Description.Trim()} {fileModelTag.Description.Trim()}"
+                : "NoName";
 
             Console.WriteLine($"{makeModelDirectory} - {dateTimeTags.Min()} - {fileNameTag.Description}");
 
