@@ -1,18 +1,19 @@
+using MediatR;
+using MX.Images.Commands;
+using MX.Images.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
-using MX.Images.Commands;
-using MX.Images.Models;
 
 namespace MX.Images.CommandHandlers
 {
     public class RefactorItemCommandHandler
-        : IRequestHandler<RefactorItemCommand>
+        : IRequestHandler<RefactorItemCommand, RefactorItemModel>
     {
         private readonly ReadOnlyCollection<string> _excludeDateTimes =
             Array.AsReadOnly(new[]
@@ -62,39 +63,45 @@ namespace MX.Images.CommandHandlers
         private FileModelTag GetFileNameTag(RefactorItemCommand request) =>
             request.File.Tags.FirstOrDefault(tag => tag.Directory == "File" && tag.Name == "File Name");
 
-        private DateTime GetDateTimeMin(RefactorItemCommand request) =>
+        private DateTime GetDateTime(RefactorItemCommand request) =>
             request.File.Tags
                 .Where(tag => tag.Name.Contains("Date") && !_excludeDateTimes.Contains(tag.Description))
                 .Select(tag =>
                 {
-                    var dateTime = default(DateTime);
-
-                    if (_dateTimeFormats.Any(dateFormat =>
-                        DateTime.TryParseExact(
-                            tag.Description,
-                            dateFormat.Pattern,
-                            dateFormat.CultureInfo,
-                            DateTimeStyles.None,
-                            out dateTime)))
+                    // TryParseExact stage
                     {
+                        var dateTime = default(DateTime);
+
+                        if (_dateTimeFormats.Any(dateFormat =>
+                            DateTime.TryParseExact(
+                                tag.Description,
+                                dateFormat.Pattern,
+                                dateFormat.CultureInfo,
+                                DateTimeStyles.None,
+                                out dateTime)))
+                        {
+                            return dateTime;
+                        }
+                    }
+
+                    // Regex stage
+                    var dateTimeParseFunc = _dateTimeExpressions.FirstOrDefault(item => item.Regex.IsMatch(tag.Description));
+
+                    if (dateTimeParseFunc != default)
+                    {
+                        var dateTime = dateTimeParseFunc.Parse(tag.Description);
                         return dateTime;
                     }
 
-                    var dateTimeFunc = _dateTimeExpressions.FirstOrDefault(item => item.Regex.IsMatch(tag.Description));
+                    // Default stage
+                    Console.WriteLine($@"*** Warning *** ""{tag.Directory}"" & ""{tag.Name}"" & ""{tag.Description}""");
 
-                    if (dateTimeFunc != default)
-                    {
-                        dateTime = dateTimeFunc.Parse(tag.Description);
-                        return dateTime;
-                    }
-
-                    Console.WriteLine($"*** {tag.Directory} {tag.Name} ({tag.Description})");
-                    return dateTime;
+                    return default;
                 })
                 .Where(dateTime => dateTime != default)
                 .Min();
 
-        public Task<Unit> Handle(RefactorItemCommand request, CancellationToken cancellationToken)
+        public Task<RefactorItemModel> Handle(RefactorItemCommand request, CancellationToken cancellationToken)
         {
             var fileMakeTag = GetFileMakeTag(request);
             var fileModelTag = GetFileModelTag(request);
@@ -104,16 +111,21 @@ namespace MX.Images.CommandHandlers
                 : "NoName";
 
             var fileNameTag = GetFileNameTag(request);
-            var dateTimeMin = GetDateTimeMin(request);
 
-            Console.WriteLine($"{makeModelDirectory} - {dateTimeMin} - {fileNameTag.Description}");
+            var name = fileNameTag == default || string.IsNullOrWhiteSpace(fileNameTag.Description)
+                ? $"{Guid.NewGuid().ToString().ToUpper()}{Path.GetExtension(request.File.Name).ToLower()}"
+                : fileNameTag.Description;
 
-            if (dateTimeMin == default)
+            var dateTime = GetDateTime(request);
+
+            Console.WriteLine($"{makeModelDirectory} - {dateTime} - {name}");
+
+            return Task.FromResult(new RefactorItemModel
             {
-                Console.WriteLine($"???");
-            }
-
-            return Task.FromResult(Unit.Value);
+                MakeModelDirectory = makeModelDirectory,
+                Name = name,
+                DateTime = dateTime
+            });
         }
     }
 }

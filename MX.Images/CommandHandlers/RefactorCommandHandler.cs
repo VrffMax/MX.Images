@@ -1,12 +1,11 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MediatR;
 using MongoDB.Driver;
 using MX.Images.Commands;
 using MX.Images.Interfaces;
 using MX.Images.Models;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MX.Images.CommandHandlers
 {
@@ -36,6 +35,7 @@ namespace MX.Images.CommandHandlers
             {
                 Projection = Builders<FileModel>.Projection
                     .Include(fileModel => fileModel.Id)
+                    .Include(fileModel => fileModel.Name)
                     .Include(fileModel => fileModel.Tags)
             };
 
