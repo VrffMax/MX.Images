@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using MediatR;
 using MongoDB.Driver;
 using MX.Images.Commands;
@@ -39,16 +42,17 @@ namespace MX.Images.CommandHandlers
                     .Include(fileModel => fileModel.Tags)
             };
 
+            var refactorItemTasks = new Task<ReadOnlyCollection<RefactorItemModel>>[0];
             var filesCursor = await _storage.Images.Value.FindAsync(findFilter, findOptions, cancellationToken);
 
             while (await filesCursor.MoveNextAsync(cancellationToken))
             {
-                var refactorItemTasks = filesCursor.Current.Select(file =>
-                        _mediator.Send(new RefactorItemCommand(file), cancellationToken))
-                    .ToArray();
-
-                await Task.WhenAll(refactorItemTasks);
+                refactorItemTasks.Append(_mediator.Send(
+                    new RefactorItemsCommand(Array.AsReadOnly(filesCursor.Current.ToArray())),
+                    cancellationToken));
             }
+
+            await Task.WhenAll(refactorItemTasks);
 
             return Unit.Value;
         }

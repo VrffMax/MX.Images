@@ -44,7 +44,9 @@ namespace MX.Images.CommandHandlers
             }
             catch (ImageProcessingException)
             {
-                Console.WriteLine($"\t{Path.GetFileName(request.File)} - {nameof(ImageProcessingException)}");
+                Console.WriteLine(
+                    $@"*** Warning *** ""{Path.GetFileName(request.File)}"" & ""{nameof(ImageProcessingException)}""");
+
                 return Task.FromResult<FileModel>(default);
             }
         }

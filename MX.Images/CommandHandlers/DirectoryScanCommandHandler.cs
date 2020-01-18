@@ -37,7 +37,7 @@ namespace MX.Images.CommandHandlers
                 var files = Array.AsReadOnly(fileTasks.SelectMany(fileTask =>
                     fileTask.Result).ToArray());
 
-                return new DirectoryModel(directoriesTask.Result, files);
+                return new DirectoryModel(await directoriesTask, files);
             }
             catch (UnauthorizedAccessException)
             {

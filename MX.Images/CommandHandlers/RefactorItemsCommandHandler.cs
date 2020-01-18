@@ -1,6 +1,3 @@
-using MediatR;
-using MX.Images.Commands;
-using MX.Images.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -9,11 +6,14 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using MX.Images.Commands;
+using MX.Images.Models;
 
 namespace MX.Images.CommandHandlers
 {
-    public class RefactorItemCommandHandler
-        : IRequestHandler<RefactorItemCommand, RefactorItemModel>
+    public class RefactorItemsCommandHandler
+        : IRequestHandler<RefactorItemsCommand, ReadOnlyCollection<RefactorItemModel>>
     {
         private readonly ReadOnlyCollection<string> _excludeDateTimes =
             Array.AsReadOnly(new[]
@@ -54,18 +54,56 @@ namespace MX.Images.CommandHandlers
                 )
             });
 
-        private FileModelTag GetFileMakeTag(RefactorItemCommand request) =>
-            request.File.Tags.FirstOrDefault(tag => tag.Directory == "Exif IFD0" && tag.Name == "Make");
+        public async Task<ReadOnlyCollection<RefactorItemModel>> Handle(RefactorItemsCommand request,
+            CancellationToken cancellationToken)
+        {
+            var getRefactorItemModelTasks =
+                request.Files.Select(file => GetRefactorItemModel(file, cancellationToken)).ToArray();
 
-        private FileModelTag GetFileModelTag(RefactorItemCommand request) =>
-            request.File.Tags.FirstOrDefault(tag => tag.Directory == "Exif IFD0" && tag.Name == "Model");
+            await Task.WhenAll(getRefactorItemModelTasks);
 
-        private FileModelTag GetFileNameTag(RefactorItemCommand request) =>
-            request.File.Tags.FirstOrDefault(tag => tag.Directory == "File" && tag.Name == "File Name");
+            return Array.AsReadOnly(getRefactorItemModelTasks
+                .Select(getRefactorItemModelTask => getRefactorItemModelTask.Result).ToArray());
+        }
 
-        private DateTime GetDateTime(RefactorItemCommand request) =>
-            request.File.Tags
-                .Where(tag => tag.Name.Contains("Date") && !_excludeDateTimes.Contains(tag.Description))
+        private Task<RefactorItemModel> GetRefactorItemModel(FileModel file, CancellationToken cancellationToken)
+        {
+            var fileMakeTag = GetFileMakeTag(file.Tags);
+            var fileModelTag = GetFileModelTag(file.Tags);
+
+            var makeModelDirectory = fileMakeTag?.Description != default && fileModelTag?.Description != default
+                ? $"{fileMakeTag.Description} {fileModelTag.Description}"
+                : "NoName";
+
+            var fileNameTag = GetFileNameTag(file.Tags);
+
+            var name = fileNameTag == default || string.IsNullOrWhiteSpace(fileNameTag.Description)
+                ? $"{Guid.NewGuid().ToString().ToUpper()}{Path.GetExtension(file.Name).ToLower()}"
+                : fileNameTag.Description;
+
+            var dateTime = GetDateTime(file.Tags);
+
+            Console.WriteLine($@"""{makeModelDirectory}"" & ""{dateTime}"" & ""{name}""");
+
+            return Task.FromResult(new RefactorItemModel
+            {
+                MakeModelDirectory = makeModelDirectory,
+                Name = name,
+                DateTime = dateTime
+            });
+        }
+
+        private FileModelTag GetFileMakeTag(ReadOnlyCollection<FileModelTag> tags) =>
+            tags.FirstOrDefault(tag => tag.Directory == "Exif IFD0" && tag.Name == "Make");
+
+        private FileModelTag GetFileModelTag(ReadOnlyCollection<FileModelTag> tags) =>
+            tags.FirstOrDefault(tag => tag.Directory == "Exif IFD0" && tag.Name == "Model");
+
+        private FileModelTag GetFileNameTag(ReadOnlyCollection<FileModelTag> tags) =>
+            tags.FirstOrDefault(tag => tag.Directory == "File" && tag.Name == "File Name");
+
+        private DateTime GetDateTime(ReadOnlyCollection<FileModelTag> tags) =>
+            tags.Where(tag => tag.Name.Contains("Date") && !_excludeDateTimes.Contains(tag.Description))
                 .Select(tag =>
                 {
                     // TryParseExact stage
@@ -85,7 +123,8 @@ namespace MX.Images.CommandHandlers
                     }
 
                     // Regex stage
-                    var dateTimeParseFunc = _dateTimeExpressions.FirstOrDefault(item => item.Regex.IsMatch(tag.Description));
+                    var dateTimeParseFunc =
+                        _dateTimeExpressions.FirstOrDefault(item => item.Regex.IsMatch(tag.Description));
 
                     if (dateTimeParseFunc != default)
                     {
@@ -100,32 +139,5 @@ namespace MX.Images.CommandHandlers
                 })
                 .Where(dateTime => dateTime != default)
                 .Min();
-
-        public Task<RefactorItemModel> Handle(RefactorItemCommand request, CancellationToken cancellationToken)
-        {
-            var fileMakeTag = GetFileMakeTag(request);
-            var fileModelTag = GetFileModelTag(request);
-
-            var makeModelDirectory = fileMakeTag?.Description != default && fileModelTag?.Description != default
-                ? $"{fileMakeTag.Description} {fileModelTag.Description}"
-                : "NoName";
-
-            var fileNameTag = GetFileNameTag(request);
-
-            var name = fileNameTag == default || string.IsNullOrWhiteSpace(fileNameTag.Description)
-                ? $"{Guid.NewGuid().ToString().ToUpper()}{Path.GetExtension(request.File.Name).ToLower()}"
-                : fileNameTag.Description;
-
-            var dateTime = GetDateTime(request);
-
-            Console.WriteLine($"{makeModelDirectory} - {dateTime} - {name}");
-
-            return Task.FromResult(new RefactorItemModel
-            {
-                MakeModelDirectory = makeModelDirectory,
-                Name = name,
-                DateTime = dateTime
-            });
-        }
     }
 }
