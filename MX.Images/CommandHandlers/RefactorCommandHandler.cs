@@ -54,9 +54,15 @@ namespace MX.Images.CommandHandlers
 
             await Task.WhenAll(refactorItemTasks);
 
-            var refactorDirectories = await _mediator.Send(new MapCommand(request.Path, Array.AsReadOnly(refactorItemTasks
-                .SelectMany(refactorItemTask => refactorItemTask.Result).ToArray())), cancellationToken);
-            
+            var refactorDirectories = await _mediator.Send(
+                new MapCommand(request.Path, Array.AsReadOnly(refactorItemTasks
+                    .SelectMany(refactorItemTask => refactorItemTask.Result).ToArray())), cancellationToken);
+
+            var refactorCopyTasks = refactorDirectories.Select(refactorDirectory =>
+                _mediator.Send(new RefactorCopyCommand(refactorDirectory), cancellationToken)).ToArray();
+
+            await Task.WhenAll(refactorCopyTasks);
+
             return Unit.Value;
         }
     }

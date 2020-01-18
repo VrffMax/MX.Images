@@ -30,17 +30,17 @@ namespace MX.Images.CommandHandlers
                             request.Path,
                             refactorItemGroup.Key.MakeModelDirectory,
                             $"{refactorItemGroup.Key.Year} {refactorItemGroup.Key.Quarter}"),
-                        Files = refactorItemGroup
+                        Files = Array.AsReadOnly(refactorItemGroup
                             .GroupBy(files => files.Name)
                             .Select(filesGroup =>
                                 new RefactorFileModel
                                 {
                                     Name = filesGroup.Key,
-                                    Files = Array.AsReadOnly(filesGroup
+                                    Sources = Array.AsReadOnly(filesGroup
                                         .Select(file => file.File)
                                         .ToArray())
                                 })
-                            .ToArray()
+                            .ToArray())
                     })
                 .ToArray()));
     }

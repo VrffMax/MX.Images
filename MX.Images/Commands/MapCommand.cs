@@ -13,7 +13,7 @@ namespace MX.Images.Commands
             RefactorItems = refactorItems;
         }
 
-        public string Path { get; set; }
+        public string Path { get; }
 
         public ReadOnlyCollection<RefactorItemModel> RefactorItems { get; }
     }

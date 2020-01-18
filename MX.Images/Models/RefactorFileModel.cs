@@ -7,6 +7,6 @@ namespace MX.Images.Models
     {
         public string Name { get; set; }
 
-        public ReadOnlyCollection<FileModel> Files { get; set; }
+        public ReadOnlyCollection<FileModel> Sources { get; set; }
     }
 }

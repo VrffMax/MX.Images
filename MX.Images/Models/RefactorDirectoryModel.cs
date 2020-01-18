@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace MX.Images.Models
 {
@@ -6,6 +6,6 @@ namespace MX.Images.Models
     {
         public string Path { get; set; }
 
-        public IEnumerable<RefactorFileModel> Files { get; set; }
+        public ReadOnlyCollection<RefactorFileModel> Files { get; set; }
     }
 }
