@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
 using MongoDB.Driver;
 using MX.Images.Commands;
 using MX.Images.Interfaces;
 using MX.Images.Models;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MX.Images.CommandHandlers
 {
@@ -38,6 +37,7 @@ namespace MX.Images.CommandHandlers
             {
                 Projection = Builders<FileModel>.Projection
                     .Include(fileModel => fileModel.Id)
+                    .Include(fileModel => fileModel.Path)
                     .Include(fileModel => fileModel.Name)
                     .Include(fileModel => fileModel.Tags)
             };
@@ -47,13 +47,16 @@ namespace MX.Images.CommandHandlers
 
             while (await filesCursor.MoveNextAsync(cancellationToken))
             {
-                refactorItemTasks.Append(_mediator.Send(
-                    new RefactorItemsCommand(Array.AsReadOnly(filesCursor.Current.ToArray())),
-                    cancellationToken));
+                refactorItemTasks = refactorItemTasks.Append(_mediator.Send(
+                    new RefactorCursorCommand(Array.AsReadOnly(filesCursor.Current.ToArray())),
+                    cancellationToken)).ToArray();
             }
 
             await Task.WhenAll(refactorItemTasks);
 
+            var refactorDirectories = await _mediator.Send(new MapCommand(request.Path, Array.AsReadOnly(refactorItemTasks
+                .SelectMany(refactorItemTask => refactorItemTask.Result).ToArray())), cancellationToken);
+            
             return Unit.Value;
         }
     }

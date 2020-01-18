@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
@@ -29,23 +31,25 @@ namespace MX.Images
         {
             InitializeContainer();
 
-            if (args.Length != 1)
+            if (args.Length != 2)
             {
                 Console.WriteLine("Root images directory for scan required");
                 return Task.CompletedTask;
             }
 
-            return SendRootScanCommand(args.First());
+            var queue = new Queue<string>(args);
+
+            return SendRootScanCommand(queue.Dequeue(), queue.Dequeue());
         }
 
-        private static async Task SendRootScanCommand(string path)
+        private static async Task SendRootScanCommand(string fromPath, string toPath)
         {
             var mediator = _container.Resolve<IMediator>();
 
             var tickCount = Environment.TickCount;
 
-            // await mediator.Send(new RootScanCommand(path));
-            await mediator.Send(new RefactorCommand(path));
+            await mediator.Send(new RootScanCommand(fromPath));
+            await mediator.Send(new RefactorCommand(toPath));
 
             Console.WriteLine($"TickCount: {Environment.TickCount - tickCount}");
         }

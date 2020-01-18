@@ -9,5 +9,7 @@ namespace MX.Images.Models
         public string Name { get; set; }
 
         public DateTime DateTime { get; set; }
+
+        public FileModel File { get; set; }
     }
 }

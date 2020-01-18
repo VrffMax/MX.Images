@@ -12,8 +12,8 @@ using MX.Images.Models;
 
 namespace MX.Images.CommandHandlers
 {
-    public class RefactorItemsCommandHandler
-        : IRequestHandler<RefactorItemsCommand, ReadOnlyCollection<RefactorItemModel>>
+    public class RefactorCursorCommandHandler
+        : IRequestHandler<RefactorCursorCommand, ReadOnlyCollection<RefactorItemModel>>
     {
         private readonly ReadOnlyCollection<string> _excludeDateTimes =
             Array.AsReadOnly(new[]
@@ -54,7 +54,7 @@ namespace MX.Images.CommandHandlers
                 )
             });
 
-        public async Task<ReadOnlyCollection<RefactorItemModel>> Handle(RefactorItemsCommand request,
+        public async Task<ReadOnlyCollection<RefactorItemModel>> Handle(RefactorCursorCommand request,
             CancellationToken cancellationToken)
         {
             var getRefactorItemModelTasks =
@@ -89,7 +89,8 @@ namespace MX.Images.CommandHandlers
             {
                 MakeModelDirectory = makeModelDirectory,
                 Name = name,
-                DateTime = dateTime
+                DateTime = dateTime,
+                File = file
             });
         }
 
