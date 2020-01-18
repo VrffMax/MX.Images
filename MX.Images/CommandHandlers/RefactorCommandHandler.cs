@@ -1,13 +1,13 @@
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MediatR;
 using MongoDB.Driver;
 using MX.Images.Commands;
 using MX.Images.Interfaces;
 using MX.Images.Models;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MX.Images.CommandHandlers
 {
@@ -30,8 +30,9 @@ namespace MX.Images.CommandHandlers
 
         public async Task<Unit> Handle(RefactorCommand request, CancellationToken cancellationToken)
         {
-            var findFilter = Builders<FileModel>.Filter.Where(fileModel =>
-                fileModel.Machine == _options.Machine);
+            var findFilter = Builders<FileModel>.Filter.Where(fileModel => true
+                && fileModel.Machine == _options.Machine
+                && fileModel.Path.StartsWith(request.SourcePath));
 
             var findOptions = new FindOptions<FileModel, FileModel>
             {
@@ -55,7 +56,7 @@ namespace MX.Images.CommandHandlers
             await Task.WhenAll(refactorItemTasks);
 
             var refactorDirectories = await _mediator.Send(
-                new MapCommand(request.Path, Array.AsReadOnly(refactorItemTasks
+                new MapCommand(request.DestinationPath, Array.AsReadOnly(refactorItemTasks
                     .SelectMany(refactorItemTask => refactorItemTask.Result).ToArray())), cancellationToken);
 
             var refactorCopyTasks = refactorDirectories.Select(refactorDirectory =>

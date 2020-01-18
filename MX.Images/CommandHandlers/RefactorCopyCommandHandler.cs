@@ -1,11 +1,10 @@
+using MediatR;
+using MX.Images.Commands;
 using System;
-using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
-using MX.Images.Commands;
 
 namespace MX.Images.CommandHandlers
 {
@@ -14,6 +13,8 @@ namespace MX.Images.CommandHandlers
     {
         public async Task<Unit> Handle(RefactorCopyCommand request, CancellationToken cancellationToken)
         {
+            Console.WriteLine(request.RefactorDirectory.Path);
+
             Directory.CreateDirectory(request.RefactorDirectory.Path);
 
             var filesTasks = request.RefactorDirectory.Files.Select(file =>

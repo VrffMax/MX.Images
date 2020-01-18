@@ -27,7 +27,7 @@ namespace MX.Images.CommandHandlers
                     new RefactorDirectoryModel
                     {
                         Path = Path.Combine(
-                            request.Path,
+                            request.DestinationPath,
                             refactorItemGroup.Key.MakeModelDirectory,
                             $"{refactorItemGroup.Key.Year} {refactorItemGroup.Key.Quarter}"),
                         Files = Array.AsReadOnly(refactorItemGroup

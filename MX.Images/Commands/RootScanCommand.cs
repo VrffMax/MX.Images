@@ -5,9 +5,9 @@ namespace MX.Images.Commands
     public class RootScanCommand
         : IRequest
     {
-        public RootScanCommand(string path) =>
-            Path = path;
+        public RootScanCommand(string sourcePath) =>
+            SourcePath = sourcePath;
 
-        public string Path { get; }
+        public string SourcePath { get; }
     }
 }

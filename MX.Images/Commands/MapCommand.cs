@@ -1,19 +1,19 @@
-using System.Collections.ObjectModel;
 using MediatR;
 using MX.Images.Models;
+using System.Collections.ObjectModel;
 
 namespace MX.Images.Commands
 {
     public class MapCommand
         : IRequest<ReadOnlyCollection<RefactorDirectoryModel>>
     {
-        public MapCommand(string path, ReadOnlyCollection<RefactorItemModel> refactorItems)
+        public MapCommand(string destinationPath, ReadOnlyCollection<RefactorItemModel> refactorItems)
         {
-            Path = path;
+            DestinationPath = destinationPath;
             RefactorItems = refactorItems;
         }
 
-        public string Path { get; }
+        public string DestinationPath { get; }
 
         public ReadOnlyCollection<RefactorItemModel> RefactorItems { get; }
     }

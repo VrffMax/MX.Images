@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using MediatR;
 using MediatR.Extensions.Autofac.DependencyInjection;
 using MX.Images.Commands;
 using MX.Images.Containers;
 using MX.Images.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MX.Images
 {
@@ -42,14 +40,14 @@ namespace MX.Images
             return SendRootScanCommand(queue.Dequeue(), queue.Dequeue());
         }
 
-        private static async Task SendRootScanCommand(string fromPath, string toPath)
+        private static async Task SendRootScanCommand(string sourcePath, string destinationPath)
         {
             var mediator = _container.Resolve<IMediator>();
 
             var tickCount = Environment.TickCount;
 
-            await mediator.Send(new RootScanCommand(fromPath));
-            await mediator.Send(new RefactorCommand(toPath));
+            await mediator.Send(new RootScanCommand(sourcePath));
+            await mediator.Send(new RefactorCommand(sourcePath, destinationPath));
 
             Console.WriteLine($"TickCount: {Environment.TickCount - tickCount}");
         }

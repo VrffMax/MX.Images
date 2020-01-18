@@ -25,10 +25,10 @@ namespace MX.Images.CommandHandlers
             try
             {
                 var directoriesTask = Task.Run(() =>
-                    Array.AsReadOnly(Directory.GetDirectories(request.Path)), cancellationToken);
+                    Array.AsReadOnly(Directory.GetDirectories(request.SourcePath)), cancellationToken);
 
                 var fileTasks = _options.SearchPatterns.Select(searchPattern =>
-                    Task.Run(() => Directory.GetFiles(request.Path, searchPattern), cancellationToken)).ToArray();
+                    Task.Run(() => Directory.GetFiles(request.SourcePath, searchPattern), cancellationToken)).ToArray();
 
                 await Task.WhenAll(
                     directoriesTask,

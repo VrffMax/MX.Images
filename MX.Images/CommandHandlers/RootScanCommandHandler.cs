@@ -20,12 +20,12 @@ namespace MX.Images.CommandHandlers
 
         public async Task<Unit> Handle(RootScanCommand request, CancellationToken cancellationToken)
         {
-            Console.WriteLine(request.Path);
+            Console.WriteLine(request.SourcePath);
 
-            var scan = await _mediator.Send(new DirectoryScanCommand(request.Path), cancellationToken);
+            var scan = await _mediator.Send(new DirectoryScanCommand(request.SourcePath), cancellationToken);
 
             var rootScanTasks = scan.Directories
-                .Select(path => _mediator.Send(new RootScanCommand(path), cancellationToken))
+                .Select(sourcePath => _mediator.Send(new RootScanCommand(sourcePath), cancellationToken))
                 .ToArray();
 
             var fileTasks = scan.Files
