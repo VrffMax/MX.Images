@@ -1,79 +1,109 @@
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
 using MongoDB.Driver;
 using MX.Images.Commands;
 using MX.Images.Interfaces;
 using MX.Images.Models;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MX.Images.CommandHandlers
 {
-	public class RefactorCopyCommandHandler
-		: IRequestHandler<RefactorCopyCommand>
-	{
-		private readonly IStorage _storage;
+    public class RefactorCopyCommandHandler
+        : IRequestHandler<RefactorCopyCommand>
+    {
+        private readonly IStorage _storage;
 
-		public RefactorCopyCommandHandler(IStorage storage) =>
-			_storage = storage;
+        public RefactorCopyCommandHandler(IStorage storage) =>
+            _storage = storage;
 
-		public async Task<Unit> Handle(RefactorCopyCommand request, CancellationToken cancellationToken)
-		{
-			Directory.CreateDirectory(request.RefactorDirectory.Path);
+        public async Task<Unit> Handle(RefactorCopyCommand request, CancellationToken cancellationToken)
+        {
+            Directory.CreateDirectory(request.RefactorDirectory.Path);
 
-			var filesTasks = request.RefactorDirectory.Files.Select(file =>
-			{
-				var destinationPath = Path.Combine(request.RefactorDirectory.Path, file.Name);
+            var filesTasks = request.RefactorDirectory.Files.Select(file =>
+            {
+                var destinationPath = Path.Combine(request.RefactorDirectory.Path, file.Name);
 
-				if (file.Sources.Count() == 1)
-				{
-					var source = file.Sources.Single();
-					var sourceFile = Path.Combine(source.Path, source.Name);
+                return file.Sources.Count() == 1
+                    ? SyncOneFileAsync(file, destinationPath, cancellationToken)
+                    : SyncManyFileAsync(file, destinationPath, cancellationToken);
+            }).ToArray();
 
-					if (File.Exists(sourceFile))
-					{
-						if (File.Exists(destinationPath) && source.LastWriteTimeUtc == File.GetLastWriteTimeUtc(sourceFile))
-						{
-							return Task.CompletedTask;
-						}
+            await Task.WhenAll(filesTasks);
 
-						return Task.Run(() => File.Copy(sourceFile, destinationPath, true), cancellationToken);
-					}
+            return Unit.Value;
+        }
 
-					var deleteTask = Directory.Exists(destinationPath)
-						? Task.Run(() => Directory.Delete(destinationPath, true), cancellationToken)
-						: File.Exists(destinationPath)
-							? Task.Run(() => File.Delete(destinationPath), cancellationToken)
-							: Task.CompletedTask;
+        private Task SyncOneFileAsync(
+            RefactorFileModel file,
+            string destinationFile,
+            CancellationToken cancellationToken)
+        {
+            if (Directory.Exists(destinationFile))
+            {
+                Directory.Delete(destinationFile, true);
+            }
 
-					var filter = Builders<FileModel>.Filter.Where(fileModel => fileModel.Id == source.Id);
+            return CopyFileAsync(file.Sources.Single(), destinationFile, cancellationToken);
+        }
 
-					return Task.WhenAll(
-						deleteTask,
-						_storage.Images.Value.DeleteOneAsync(filter, cancellationToken));
-				}
+        private Task SyncManyFileAsync(
+            RefactorFileModel file,
+            string destinationPath,
+            CancellationToken cancellationToken)
+        {
+            if (File.Exists(destinationPath))
+            {
+                File.Delete(destinationPath);
+            }
 
-				Directory.CreateDirectory(destinationPath);
+            Directory.CreateDirectory(destinationPath);
 
-				var counter = 1;
-				var extension = Path.GetExtension(file.Name);
+            var extension = Path.GetExtension(file.Name);
 
-				var sourcesTasks = file.Sources.Select(source =>
-				{
-					var sourceFile = Path.Combine(source.Path, source.Name);
-					var destinationFile = Path.Combine(destinationPath, $"{counter++}{extension}");
+            var sourcesTasks = file.Sources.Select(source =>
+            {
+                var destinationFile = Path.Combine(destinationPath, $"{GetHashMd5(source.Path)}{extension}");
 
-					return Task.Run(() =>
-						File.Copy(sourceFile, destinationFile), cancellationToken);
-				}).ToArray();
+                return CopyFileAsync(source, destinationFile, cancellationToken);
+            }).ToArray();
 
-				return Task.WhenAll(sourcesTasks);
-			}).ToArray();
+            return Task.WhenAll(sourcesTasks);
+        }
 
-			await Task.WhenAll(filesTasks);
+        private Task CopyFileAsync(
+            FileModel source,
+            string destinationFile,
+            CancellationToken cancellationToken)
+        {
+            var sourceFile = Path.Combine(source.Path, source.Name);
+            var lastWriteTimeUtc = File.GetLastWriteTimeUtc(sourceFile);
 
-			return Unit.Value;
-		}
-	}
+            if (source.LastWriteTimeUtc == lastWriteTimeUtc)
+            {
+                return File.Exists(destinationFile)
+                    ? Task.CompletedTask
+                    : Task.Run(() => File.Copy(sourceFile, destinationFile), cancellationToken);
+            }
+
+            var filter = Builders<FileModel>.Filter.Where(fileModel => fileModel.Id == source.Id);
+            var update = Builders<FileModel>.Update.Set(fileModel => fileModel.LastWriteTimeUtc, lastWriteTimeUtc);
+
+            return Task.WhenAll(
+                _storage.Images.Value.UpdateOneAsync(filter, update, default, cancellationToken),
+                Task.Run(() => File.Copy(sourceFile, destinationFile, true), cancellationToken)
+            );
+        }
+
+        private string GetHashMd5(string value)
+        {
+            using var md5 = MD5.Create();
+            return string.Concat(md5.ComputeHash(Encoding.ASCII.GetBytes(value))
+                .Select(item => item.ToString("x2")));
+        }
+    }
 }
