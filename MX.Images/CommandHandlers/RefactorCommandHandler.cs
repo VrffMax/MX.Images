@@ -40,6 +40,7 @@ namespace MX.Images.CommandHandlers
 					.Include(fileModel => fileModel.Id)
 					.Include(fileModel => fileModel.Path)
 					.Include(fileModel => fileModel.Name)
+					.Include(fileModel => fileModel.LastWriteTimeUtc)
 					.Include(fileModel => fileModel.Tags)
 			};
 

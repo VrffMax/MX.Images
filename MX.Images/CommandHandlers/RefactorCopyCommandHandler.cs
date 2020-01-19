@@ -1,5 +1,8 @@
 using MediatR;
+using MongoDB.Driver;
 using MX.Images.Commands;
+using MX.Images.Interfaces;
+using MX.Images.Models;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -10,6 +13,11 @@ namespace MX.Images.CommandHandlers
 	public class RefactorCopyCommandHandler
 		: IRequestHandler<RefactorCopyCommand>
 	{
+		private readonly IStorage _storage;
+
+		public RefactorCopyCommandHandler(IStorage storage) =>
+			_storage = storage;
+
 		public async Task<Unit> Handle(RefactorCopyCommand request, CancellationToken cancellationToken)
 		{
 			Directory.CreateDirectory(request.RefactorDirectory.Path);
@@ -23,8 +31,32 @@ namespace MX.Images.CommandHandlers
 					var source = file.Sources.Single();
 					var sourceFile = Path.Combine(source.Path, source.Name);
 
-					return Task.Run(() =>
-						File.Copy(sourceFile, destinationPath), cancellationToken);
+					if (File.Exists(sourceFile))
+					{
+						if (File.Exists(destinationPath))
+						{
+							if (source.LastWriteTimeUtc == File.GetLastWriteTimeUtc(sourceFile))
+							{
+								return Task.CompletedTask;
+							}
+
+							return Task.Run(() => File.Copy(sourceFile, destinationPath, true), cancellationToken);
+						}
+
+						return Task.Run(() => File.Copy(sourceFile, destinationPath), cancellationToken);
+					}
+
+					var deleteTask = Directory.Exists(destinationPath)
+						? Task.Run(() => Directory.Delete(destinationPath, true), cancellationToken)
+						: File.Exists(destinationPath)
+							? Task.Run(() => File.Delete(destinationPath), cancellationToken)
+							: Task.CompletedTask;
+
+					var filter = Builders<FileModel>.Filter.Where(fileModel => fileModel.Id == source.Id);
+
+					return Task.WhenAll(
+						deleteTask,
+						_storage.Images.Value.DeleteOneAsync(filter, cancellationToken));
 				}
 
 				Directory.CreateDirectory(destinationPath);
