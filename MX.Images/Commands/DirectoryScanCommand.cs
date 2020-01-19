@@ -6,9 +6,9 @@ namespace MX.Images.Commands
     public class DirectoryScanCommand
         : IRequest<DirectoryModel>
     {
-        public DirectoryScanCommand(string path) =>
-            Path = path;
+        public DirectoryScanCommand(string sourcePath) =>
+            SourcePath = sourcePath;
 
-        public string Path { get; }
+        public string SourcePath { get; }
     }
 }
