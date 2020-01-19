@@ -10,46 +10,39 @@ using System.Threading.Tasks;
 
 namespace MX.Images
 {
-    public static class Program
-    {
-        private static IContainer _container;
+	public static class Program
+	{
+		private static async Task Main(string[] args)
+		{
+			if (args.Length != 2)
+			{
+				Console.WriteLine("MX.Images [Source directory] [Destination directory]");
+				return;
+			}
 
-        private static void InitializeContainer()
-        {
-            var builder = new ContainerBuilder();
+			var queue = new Queue<string>(args);
+			await MainAsync(await GetMediatorAsync(), queue.Dequeue(), queue.Dequeue());
+		}
 
-            builder.RegisterInstance(new Options()).As<IOptions>();
-            builder.RegisterType<Storage>().As<IStorage>();
-            builder.AddMediatR(typeof(Program).Assembly);
+		private static Task<IMediator> GetMediatorAsync()
+		{
+			var builder = new ContainerBuilder();
 
-            _container = builder.Build();
-        }
+			builder.RegisterInstance(new Options()).As<IOptions>();
+			builder.RegisterType<Storage>().As<IStorage>();
+			builder.AddMediatR(typeof(Program).Assembly);
 
-        private static Task Main(string[] args)
-        {
-            InitializeContainer();
+			return Task.FromResult(builder.Build().Resolve<IMediator>());
+		}
 
-            if (args.Length != 2)
-            {
-                Console.WriteLine("Root images directory for scan required");
-                return Task.CompletedTask;
-            }
+		private static async Task MainAsync(IMediator mediator, string sourcePath, string destinationPath)
+		{
+			var tickCount = Environment.TickCount;
 
-            var queue = new Queue<string>(args);
+			await mediator.Send(new RootScanCommand(sourcePath));
+			await mediator.Send(new RefactorCommand(sourcePath, destinationPath));
 
-            return SendRootScanCommand(queue.Dequeue(), queue.Dequeue());
-        }
-
-        private static async Task SendRootScanCommand(string sourcePath, string destinationPath)
-        {
-            var mediator = _container.Resolve<IMediator>();
-
-            var tickCount = Environment.TickCount;
-
-            await mediator.Send(new RootScanCommand(sourcePath));
-            await mediator.Send(new RefactorCommand(sourcePath, destinationPath));
-
-            Console.WriteLine($"TickCount: {Environment.TickCount - tickCount}");
-        }
-    }
+			Console.WriteLine($"TickCount: {Environment.TickCount - tickCount}");
+		}
+	}
 }

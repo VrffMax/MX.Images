@@ -83,8 +83,6 @@ namespace MX.Images.CommandHandlers
 
             var dateTime = GetDateTime(file.Tags);
 
-            Console.WriteLine($@"""{makeModelDirectory}"" & ""{dateTime}"" & ""{name}""");
-
             return Task.FromResult(new RefactorItemModel
             {
                 MakeModelDirectory = makeModelDirectory,
