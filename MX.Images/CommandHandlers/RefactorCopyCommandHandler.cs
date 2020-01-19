@@ -33,17 +33,12 @@ namespace MX.Images.CommandHandlers
 
 					if (File.Exists(sourceFile))
 					{
-						if (File.Exists(destinationPath))
+						if (File.Exists(destinationPath) && source.LastWriteTimeUtc == File.GetLastWriteTimeUtc(sourceFile))
 						{
-							if (source.LastWriteTimeUtc == File.GetLastWriteTimeUtc(sourceFile))
-							{
-								return Task.CompletedTask;
-							}
-
-							return Task.Run(() => File.Copy(sourceFile, destinationPath, true), cancellationToken);
+							return Task.CompletedTask;
 						}
 
-						return Task.Run(() => File.Copy(sourceFile, destinationPath), cancellationToken);
+						return Task.Run(() => File.Copy(sourceFile, destinationPath, true), cancellationToken);
 					}
 
 					var deleteTask = Directory.Exists(destinationPath)
