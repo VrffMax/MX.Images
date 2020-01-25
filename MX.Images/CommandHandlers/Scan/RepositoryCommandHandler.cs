@@ -1,15 +1,14 @@
-using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using MongoDB.Driver;
-using MX.Images.Commands;
+using MX.Images.Commands.Scan;
 using MX.Images.Interfaces;
 using MX.Images.Models;
 
-namespace MX.Images.CommandHandlers
+namespace MX.Images.CommandHandlers.Scan
 {
     public class RepositoryCommandHandler
         : IRequestHandler<RepositoryCommand>
@@ -76,8 +75,6 @@ namespace MX.Images.CommandHandlers
 
             if (insertImages.Any())
             {
-                Console.WriteLine($"Insert {path}");
-
                 await _storageFindInsert.Images.Value.InsertManyAsync(insertImages);
             }
         }
@@ -94,8 +91,6 @@ namespace MX.Images.CommandHandlers
 
             if (deleteImages.Any())
             {
-                Console.WriteLine($"Delete {path}");
-
                 var deleteFilter = Builders<FileModel>.Filter.In(fileModel => fileModel.Id, deleteImages);
                 await _storageDelete.Images.Value.DeleteManyAsync(deleteFilter);
             }

@@ -1,15 +1,16 @@
-using MediatR;
-using MetadataExtractor;
-using MX.Images.Commands;
-using MX.Images.Interfaces;
-using MX.Images.Models;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using MetadataExtractor;
+using MX.Images.Commands;
+using MX.Images.Commands.Scan;
+using MX.Images.Interfaces;
+using MX.Images.Models;
 
-namespace MX.Images.CommandHandlers
+namespace MX.Images.CommandHandlers.Scan
 {
     public class FileScanCommandHandler
         : IRequestHandler<FileScanCommand, FileModel>

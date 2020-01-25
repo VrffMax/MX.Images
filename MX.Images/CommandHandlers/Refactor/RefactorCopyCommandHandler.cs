@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -7,10 +8,11 @@ using System.Threading.Tasks;
 using MediatR;
 using MongoDB.Driver;
 using MX.Images.Commands;
+using MX.Images.Commands.Refactor;
 using MX.Images.Interfaces;
 using MX.Images.Models;
 
-namespace MX.Images.CommandHandlers
+namespace MX.Images.CommandHandlers.Refactor
 {
     public class RefactorCopyCommandHandler
         : IRequestHandler<RefactorCopyCommand>
@@ -22,6 +24,8 @@ namespace MX.Images.CommandHandlers
 
         public async Task<Unit> Handle(RefactorCopyCommand request, CancellationToken cancellationToken)
         {
+            Console.WriteLine($"Copy {request.RefactorDirectory.Path}");
+
             Directory.CreateDirectory(request.RefactorDirectory.Path);
 
             var filesTasks = request.RefactorDirectory.Files.Select(file =>

@@ -7,6 +7,8 @@ using MX.Images.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MX.Images.Commands.Refactor;
+using MX.Images.Commands.Scan;
 
 namespace MX.Images
 {

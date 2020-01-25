@@ -8,9 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using MX.Images.Commands;
+using MX.Images.Commands.Refactor;
 using MX.Images.Models;
 
-namespace MX.Images.CommandHandlers
+namespace MX.Images.CommandHandlers.Refactor
 {
     public class RefactorCursorCommandHandler
         : IRequestHandler<RefactorCursorCommand, ReadOnlyCollection<RefactorItemModel>>

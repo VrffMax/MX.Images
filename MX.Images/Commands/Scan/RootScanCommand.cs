@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace MX.Images.Commands
+namespace MX.Images.Commands.Scan
 {
     public class RootScanCommand
         : IRequest
