@@ -21,6 +21,10 @@ namespace MX.Images.Models
 
         public DateTime LastWriteTimeUtc { get; set; }
 
+        public string CopyPath { get; set; }
+
+        public byte[] Hash { get; set; }
+
         public ReadOnlyCollection<FileModelTag> Tags { get; set; }
     }
 }

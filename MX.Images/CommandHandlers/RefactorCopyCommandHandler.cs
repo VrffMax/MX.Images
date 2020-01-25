@@ -67,7 +67,7 @@ namespace MX.Images.CommandHandlers
 
             var sourcesTasks = file.Sources.Select(source =>
             {
-                var destinationFile = Path.Combine(destinationPath, $"{GetHashMd5(source.Path)}{extension}");
+                var destinationFile = Path.Combine(destinationPath, $"{GetStringHash(source.Path)}{extension}");
 
                 return CopyFileAsync(source, destinationFile, cancellationToken);
             }).ToArray();
@@ -83,15 +83,16 @@ namespace MX.Images.CommandHandlers
             var sourceFile = Path.Combine(source.Path, source.Name);
             var lastWriteTimeUtc = File.GetLastWriteTimeUtc(sourceFile);
 
-            if (source.LastWriteTimeUtc == lastWriteTimeUtc)
+            if (source.LastWriteTimeUtc == lastWriteTimeUtc && File.Exists(destinationFile))
             {
-                return File.Exists(destinationFile)
-                    ? Task.CompletedTask
-                    : Task.Run(() => File.Copy(sourceFile, destinationFile), cancellationToken);
+                return Task.CompletedTask;
             }
 
             var filter = Builders<FileModel>.Filter.Where(fileModel => fileModel.Id == source.Id);
-            var update = Builders<FileModel>.Update.Set(fileModel => fileModel.LastWriteTimeUtc, lastWriteTimeUtc);
+            var update = Builders<FileModel>.Update
+                .Set(fileModel => fileModel.LastWriteTimeUtc, lastWriteTimeUtc)
+                .Set(fileModel => fileModel.CopyPath, destinationFile)
+                .Set(fileModel => fileModel.Hash, GetFileHash(sourceFile));
 
             return Task.WhenAll(
                 _storage.Images.Value.UpdateOneAsync(filter, update, default, cancellationToken),
@@ -99,11 +100,18 @@ namespace MX.Images.CommandHandlers
             );
         }
 
-        private string GetHashMd5(string value)
+        private string GetStringHash(string value)
         {
             using var md5 = MD5.Create();
             return string.Concat(md5.ComputeHash(Encoding.ASCII.GetBytes(value))
                 .Select(item => item.ToString("x2")));
+        }
+
+        private byte[] GetFileHash(string fileName)
+        {
+            using var md5 = MD5.Create();
+            using var fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return md5.ComputeHash(fileStream);
         }
     }
 }

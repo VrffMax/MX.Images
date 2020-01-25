@@ -76,7 +76,7 @@ namespace MX.Images.CommandHandlers
 
             if (insertImages.Any())
             {
-                Console.WriteLine($"Mongo insert {path}");
+                Console.WriteLine($"Insert {path}");
 
                 await _storageFindInsert.Images.Value.InsertManyAsync(insertImages);
             }
