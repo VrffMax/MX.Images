@@ -1,13 +1,12 @@
+using MediatR;
+using MX.Images.Commands.Refactor;
+using MX.Images.Models.CQRS;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
-using MX.Images.Commands;
-using MX.Images.Commands.Refactor;
-using MX.Images.Models;
 
 namespace MX.Images.CommandHandlers.Refactor
 {

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 
-namespace MX.Images.Models
+namespace MX.Images.Models.CQRS
 {
     public class DirectoryModel
     {

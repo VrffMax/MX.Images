@@ -1,4 +1,4 @@
-namespace MX.Images.Models
+namespace MX.Images.Models.Mongo
 {
     public class FileModelTag
     {

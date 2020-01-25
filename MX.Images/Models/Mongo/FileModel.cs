@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace MX.Images.Models
+namespace MX.Images.Models.Mongo
 {
     public class FileModel
     {
