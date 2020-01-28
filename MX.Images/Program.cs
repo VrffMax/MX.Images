@@ -8,94 +8,102 @@ using MX.Images.Containers;
 using MX.Images.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace MX.Images
 {
-	public static class Program
-	{
-		private enum CommandEnum
-		{
-			Scan,
-			Sync,
-			ScanSync,
-			Verify
-		}
+    public static class Program
+    {
+        private enum CommandEnum
+        {
+            Help,
+            Scan,
+            Sync,
+            ScanSync,
+            Verify
+        }
 
-		private static async Task Main(string[] args)
-		{
-			if (args.Length < 2 || args.Length > 3)
-			{
-				Console.WriteLine("MX.Images [Scan | Sync | ScanSync | Verify] [Source directory] [Destination directory]");
-				return;
-			}
+        private static async Task Main(string[] args)
+        {
+            var queue = new Queue<string>(args);
 
-			var queue = new Queue<string>(args);
+            queue.Dequeue();
+            if (queue.Count == 0 || !Enum.TryParse<CommandEnum>(queue.Dequeue(), true, out var command))
+            {
+                Console.WriteLine("MX.Images Help");
+                return;
+            }
 
-			if (!Enum.TryParse<CommandEnum>(queue.Dequeue(), true, out var command))
-			{
-				Console.WriteLine($"Commands: {CommandEnum.Scan}, {CommandEnum.Sync}, {CommandEnum.ScanSync} or {CommandEnum.Verify}");
-				return;
-			}
+            switch (command)
+            {
+                case CommandEnum.Help:
+                    Console.WriteLine(@"MX.Images
+	Scan [Source directory]
+	Sync [Source directory] [Destination directory]
+	ScanSync [Source directory] [Destination directory]
+	Verify [Source directory]
+");
+                    return;
 
-			var isSync = new[] { CommandEnum.Sync, CommandEnum.ScanSync }.Contains(command);
-			if (isSync && args.Length != 3)
-			{
-				Console.WriteLine("MX.Images [Sync | ScanSync] [Source directory] [Destination directory]");
-				return;
-			}
+                case CommandEnum.Scan:
+                    if (queue.Count != 1)
+                    {
+                        Console.WriteLine($"MX.Images {CommandEnum.Scan} [Source directory]");
+                        return;
+                    }
 
-			if (new[] { CommandEnum.Scan, CommandEnum.Verify }.Contains(command) && args.Length != 2)
-			{
-				Console.WriteLine("MX.Images [Scan | Verify] [Source directory]");
-				return;
-			}
+                    await (await GetMediatorAsync()).Send(new RootScanCommand(queue.Dequeue()));
+                    return;
 
-			await MainAsync(
-				await GetMediatorAsync(),
-				command,
-				queue.Dequeue(),
-				isSync ? queue.Dequeue() : default);
-		}
+                case CommandEnum.Sync:
+                    if (queue.Count != 2)
+                    {
+                        Console.WriteLine($"MX.Images {CommandEnum.Sync} [Source directory] [Destination directory]");
+                        return;
+                    }
 
-		private static Task<IMediator> GetMediatorAsync()
-		{
-			var builder = new ContainerBuilder();
+                    await (await GetMediatorAsync()).Send(new RefactorCommand(queue.Dequeue(), queue.Dequeue()));
+                    return;
 
-			builder.RegisterInstance(new Options()).As<IOptions>();
-			builder.RegisterType<Storage>().As<IStorage>();
-			builder.AddMediatR(typeof(Program).Assembly);
+                case CommandEnum.ScanSync:
+                    if (queue.Count != 2)
+                    {
+                        Console.WriteLine(
+                            $"MX.Images {CommandEnum.ScanSync} [Source directory] [Destination directory]");
+                        return;
+                    }
 
-			return Task.FromResult(builder.Build().Resolve<IMediator>());
-		}
+                    var mediator = await GetMediatorAsync();
 
-		private static async Task MainAsync(IMediator mediator, CommandEnum command, string sourcePath, string destinationPath)
-		{
-			var tickCount = Environment.TickCount;
+                    await mediator.Send(new RootScanCommand(queue.Dequeue()));
+                    await mediator.Send(new RefactorCommand(queue.Dequeue(), queue.Dequeue()));
 
-			switch (command)
-			{
-				case CommandEnum.Scan:
-					await mediator.Send(new RootScanCommand(sourcePath));
-					break;
+                    return;
 
-				case CommandEnum.Sync:
-					await mediator.Send(new RefactorCommand(sourcePath, destinationPath));
-					break;
+                case CommandEnum.Verify:
+                    if (queue.Count != 1)
+                    {
+                        Console.WriteLine($"MX.Images {CommandEnum.Verify} [Source directory]");
+                        return;
+                    }
 
-				case CommandEnum.ScanSync:
-					await mediator.Send(new RootScanCommand(sourcePath));
-					await mediator.Send(new RefactorCommand(sourcePath, destinationPath));
-					break;
+                    await (await GetMediatorAsync()).Send(new VerifyCommand(queue.Dequeue()));
+                    return;
+            }
+        }
 
-				case CommandEnum.Verify:
-					await mediator.Send(new VerifyCommand(sourcePath));
-					break;
-			}
+        private static Task<IMediator> GetMediatorAsync()
+        {
+            var builder = new ContainerBuilder();
 
+            builder.RegisterInstance(new Options()).As<IOptions>();
+            builder.RegisterType<Storage>().As<IStorage>();
+            builder.AddMediatR(typeof(Program).Assembly);
 
-			Console.WriteLine($"TickCount: {Environment.TickCount - tickCount}");
-		}
-	}
+            return Task.FromResult(builder.Build().Resolve<IMediator>());
+        }
+    }
 }
