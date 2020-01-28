@@ -8,6 +8,7 @@ using MX.Images.Containers;
 using MX.Images.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
@@ -26,32 +27,40 @@ namespace MX.Images
             Verify
         }
 
+        private const string MxImage = "MX.Image";
+        private const string SourcePath = "[Source path]";
+        private const string DestinationPath = "[Destination path]";
+
+        private static readonly Dictionary<CommandEnum, string> CommandHelp = new Dictionary<CommandEnum, string>
+        {
+            {CommandEnum.Scan, $"{MxImage} {CommandEnum.Scan} {SourcePath}"},
+            {CommandEnum.Sync, $"{MxImage} {CommandEnum.Sync} {SourcePath} {DestinationPath}"},
+            {CommandEnum.ScanSync, $"{MxImage} {CommandEnum.ScanSync} {SourcePath} {DestinationPath}"},
+            {CommandEnum.Verify, $"{MxImage} {CommandEnum.Verify} {SourcePath}"},
+        };
+
         private static async Task Main(string[] args)
         {
             var queue = new Queue<string>(args);
 
-            queue.Dequeue();
             if (queue.Count == 0 || !Enum.TryParse<CommandEnum>(queue.Dequeue(), true, out var command))
             {
                 Console.WriteLine("MX.Images Help");
                 return;
             }
 
+            Console.WriteLine(command);
+
             switch (command)
             {
                 case CommandEnum.Help:
-                    Console.WriteLine(@"MX.Images
-	Scan [Source directory]
-	Sync [Source directory] [Destination directory]
-	ScanSync [Source directory] [Destination directory]
-	Verify [Source directory]
-");
+                    Console.WriteLine(string.Join(Environment.NewLine, CommandHelp.Values));
                     return;
 
                 case CommandEnum.Scan:
                     if (queue.Count != 1)
                     {
-                        Console.WriteLine($"MX.Images {CommandEnum.Scan} [Source directory]");
+                        Console.WriteLine(CommandHelp[CommandEnum.Scan]);
                         return;
                     }
 
@@ -61,7 +70,7 @@ namespace MX.Images
                 case CommandEnum.Sync:
                     if (queue.Count != 2)
                     {
-                        Console.WriteLine($"MX.Images {CommandEnum.Sync} [Source directory] [Destination directory]");
+                        Console.WriteLine(CommandHelp[CommandEnum.Sync]);
                         return;
                     }
 
@@ -71,22 +80,17 @@ namespace MX.Images
                 case CommandEnum.ScanSync:
                     if (queue.Count != 2)
                     {
-                        Console.WriteLine(
-                            $"MX.Images {CommandEnum.ScanSync} [Source directory] [Destination directory]");
+                        Console.WriteLine(CommandHelp[CommandEnum.ScanSync]);
                         return;
                     }
 
-                    var mediator = await GetMediatorAsync();
-
-                    await mediator.Send(new RootScanCommand(queue.Dequeue()));
-                    await mediator.Send(new RefactorCommand(queue.Dequeue(), queue.Dequeue()));
-
+                    await ScanSync(queue.Dequeue(), queue.Dequeue());
                     return;
 
                 case CommandEnum.Verify:
                     if (queue.Count != 1)
                     {
-                        Console.WriteLine($"MX.Images {CommandEnum.Verify} [Source directory]");
+                        Console.WriteLine(CommandHelp[CommandEnum.Verify]);
                         return;
                     }
 
@@ -104,6 +108,14 @@ namespace MX.Images
             builder.AddMediatR(typeof(Program).Assembly);
 
             return Task.FromResult(builder.Build().Resolve<IMediator>());
+        }
+
+        private static async Task ScanSync(string sourcePath, string destinationPath)
+        {
+            var mediator = await GetMediatorAsync();
+
+            await mediator.Send(new RootScanCommand(sourcePath));
+            await mediator.Send(new RefactorCommand(sourcePath, destinationPath));
         }
     }
 }
