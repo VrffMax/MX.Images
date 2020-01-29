@@ -3,10 +3,10 @@ using MX.Images.Models.CQRS;
 
 namespace MX.Images.Commands.Scan
 {
-	public class DirectoryScanCommand
+	public class ScanDirectoryCommand
 		: IRequest<DirectoryModel>
 	{
-		public DirectoryScanCommand(string sourcePath) =>
+		public ScanDirectoryCommand(string sourcePath) =>
 			SourcePath = sourcePath;
 
 		public string SourcePath { get; }

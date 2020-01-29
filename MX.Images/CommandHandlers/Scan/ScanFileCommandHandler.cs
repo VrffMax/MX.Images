@@ -11,15 +11,15 @@ using System.Threading.Tasks;
 
 namespace MX.Images.CommandHandlers.Scan
 {
-	public class FileScanCommandHandler
-		: IRequestHandler<FileScanCommand, FileModel>
+	public class ScanFileCommandHandler
+		: IRequestHandler<ScanFileCommand, FileModel>
 	{
 		private readonly IOptions _options;
 
-		public FileScanCommandHandler(IOptions options) =>
+		public ScanFileCommandHandler(IOptions options) =>
 			_options = options;
 
-		public Task<FileModel> Handle(FileScanCommand request,
+		public Task<FileModel> Handle(ScanFileCommand request,
 			CancellationToken cancellationToken)
 		{
 			try

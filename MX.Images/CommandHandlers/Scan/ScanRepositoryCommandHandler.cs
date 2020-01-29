@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 
 namespace MX.Images.CommandHandlers.Scan
 {
-	public class RepositoryCommandHandler
-		: IRequestHandler<RepositoryCommand>
+	public class ScanRepositoryCommandHandler
+		: IRequestHandler<ScanRepositoryCommand>
 	{
 		private readonly IStorage _storageFindInsert;
 		private readonly IStorage _storageDelete;
 
-		public RepositoryCommandHandler(
+		public ScanRepositoryCommandHandler(
 			IStorage storageFindInsert,
 			IStorage storageDelete)
 		{
@@ -24,7 +24,7 @@ namespace MX.Images.CommandHandlers.Scan
 			_storageDelete = storageDelete;
 		}
 
-		public async Task<Unit> Handle(RepositoryCommand request, CancellationToken cancellationToken)
+		public async Task<Unit> Handle(ScanRepositoryCommand request, CancellationToken cancellationToken)
 		{
 			if (!request.Files.Any())
 			{

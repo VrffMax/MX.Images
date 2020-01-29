@@ -2,10 +2,10 @@ using MediatR;
 
 namespace MX.Images.Commands.Refactor
 {
-    public class RefactorCommand
+    public class SyncCommand
         : IRequest
     {
-        public RefactorCommand(string sourcePath, string destinationPath)
+        public SyncCommand(string sourcePath, string destinationPath)
         {
             SourcePath = sourcePath;
             DestinationPath = destinationPath;

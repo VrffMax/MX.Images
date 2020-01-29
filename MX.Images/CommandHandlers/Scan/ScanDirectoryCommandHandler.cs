@@ -10,15 +10,15 @@ using System.Threading.Tasks;
 
 namespace MX.Images.CommandHandlers.Scan
 {
-	public class DirectoryScanCommandHandler
-		: IRequestHandler<DirectoryScanCommand, DirectoryModel>
+	public class ScanDirectoryCommandHandler
+		: IRequestHandler<ScanDirectoryCommand, DirectoryModel>
 	{
 		private readonly IOptions _options;
 
-		public DirectoryScanCommandHandler(IOptions options) =>
+		public ScanDirectoryCommandHandler(IOptions options) =>
 			_options = options;
 
-		public async Task<DirectoryModel> Handle(DirectoryScanCommand request,
+		public async Task<DirectoryModel> Handle(ScanDirectoryCommand request,
 			CancellationToken cancellationToken)
 		{
 			try

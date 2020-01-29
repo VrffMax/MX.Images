@@ -3,10 +3,10 @@ using MX.Images.Models.CQRS;
 
 namespace MX.Images.Commands.Refactor
 {
-	public class RefactorCopyCommand
+	public class SyncCopyCommand
 		: IRequest
 	{
-		public RefactorCopyCommand(RefactorDirectoryModel refactorDirectory) =>
+		public SyncCopyCommand(RefactorDirectoryModel refactorDirectory) =>
 			RefactorDirectory = refactorDirectory;
 
 		public RefactorDirectoryModel RefactorDirectory { get; }

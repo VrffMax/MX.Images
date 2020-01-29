@@ -3,10 +3,10 @@ using MX.Images.Models.Mongo;
 
 namespace MX.Images.Commands.Scan
 {
-	public class FileScanCommand
+	public class ScanFileCommand
 		: IRequest<FileModel>
 	{
-		public FileScanCommand(string file) =>
+		public ScanFileCommand(string file) =>
 			File = file;
 
 		public string File { get; }

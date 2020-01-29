@@ -5,10 +5,10 @@ using System.Collections.ObjectModel;
 
 namespace MX.Images.Commands.Refactor
 {
-	public class RefactorCursorCommand
+	public class SyncCursorCommand
 		: IRequest<ReadOnlyCollection<RefactorItemModel>>
 	{
-		public RefactorCursorCommand(ReadOnlyCollection<FileModel> files) =>
+		public SyncCursorCommand(ReadOnlyCollection<FileModel> files) =>
 			Files = files;
 
 		public ReadOnlyCollection<FileModel> Files { get; }

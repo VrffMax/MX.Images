@@ -13,8 +13,8 @@ using System.Threading.Tasks;
 
 namespace MX.Images.CommandHandlers.Refactor
 {
-	public class RefactorCursorCommandHandler
-		: IRequestHandler<RefactorCursorCommand, ReadOnlyCollection<RefactorItemModel>>
+	public class SyncCursorCommandHandler
+		: IRequestHandler<SyncCursorCommand, ReadOnlyCollection<RefactorItemModel>>
 	{
 		private readonly ReadOnlyCollection<string> _excludeDateTimes =
 			Array.AsReadOnly(new[]
@@ -55,7 +55,7 @@ namespace MX.Images.CommandHandlers.Refactor
 				)
 			});
 
-		public async Task<ReadOnlyCollection<RefactorItemModel>> Handle(RefactorCursorCommand request,
+		public async Task<ReadOnlyCollection<RefactorItemModel>> Handle(SyncCursorCommand request,
 			CancellationToken cancellationToken)
 		{
 			var getRefactorItemModelTasks =

@@ -12,14 +12,14 @@ using System.Threading.Tasks;
 
 namespace MX.Images.CommandHandlers.Refactor
 {
-	public class RefactorCommandHandler
-		: IRequestHandler<RefactorCommand>
+	public class SyncCommandHandler
+		: IRequestHandler<SyncCommand>
 	{
 		private readonly IMediator _mediator;
 		private readonly IStorage _storage;
 		private readonly IOptions _options;
 
-		public RefactorCommandHandler(
+		public SyncCommandHandler(
 			IMediator mediator,
 			IStorage storage,
 			IOptions options)
@@ -29,7 +29,7 @@ namespace MX.Images.CommandHandlers.Refactor
 			_options = options;
 		}
 
-		public async Task<Unit> Handle(RefactorCommand request, CancellationToken cancellationToken)
+		public async Task<Unit> Handle(SyncCommand request, CancellationToken cancellationToken)
 		{
 			var findFilter = Builders<FileModel>.Filter.Where(fileModel => true
 																		   && fileModel.Machine == _options.Machine
@@ -52,21 +52,21 @@ namespace MX.Images.CommandHandlers.Refactor
 			while (await filesCursor.MoveNextAsync(cancellationToken))
 			{
 				refactorCursorTasks = refactorCursorTasks.Append(_mediator.Send(
-					new RefactorCursorCommand(Array.AsReadOnly(filesCursor.Current.ToArray())),
+					new SyncCursorCommand(Array.AsReadOnly(filesCursor.Current.ToArray())),
 					cancellationToken)).ToArray();
 			}
 
 			await Task.WhenAll(refactorCursorTasks);
 
 			var refactorDirectories = await _mediator.Send(
-				new MapCommand(
+				new SyncMapCommand(
 					request.DestinationPath,
 					Array.AsReadOnly(refactorCursorTasks.SelectMany(refactorItemTask => refactorItemTask.Result)
 						.ToArray())),
 				cancellationToken);
 
 			var refactorCopyTasks = refactorDirectories.Select(refactorDirectory =>
-				_mediator.Send(new RefactorCopyCommand(refactorDirectory), cancellationToken)).ToArray();
+				_mediator.Send(new SyncCopyCommand(refactorDirectory), cancellationToken)).ToArray();
 
 			await Task.WhenAll(refactorCopyTasks);
 

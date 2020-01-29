@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace MX.Images.CommandHandlers.Refactor
 {
-	public class MapCommandHandler
-		: IRequestHandler<MapCommand, ReadOnlyCollection<RefactorDirectoryModel>>
+	public class SyncMapCommandHandler
+		: IRequestHandler<SyncMapCommand, ReadOnlyCollection<RefactorDirectoryModel>>
 	{
 		public Task<ReadOnlyCollection<RefactorDirectoryModel>> Handle(
-			MapCommand request,
+			SyncMapCommand request,
 			CancellationToken cancellationToken) =>
 			Task.FromResult(Array.AsReadOnly(request.RefactorItems
 				.GroupBy(refactorItem => new

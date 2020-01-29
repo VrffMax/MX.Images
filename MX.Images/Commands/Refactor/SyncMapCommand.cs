@@ -4,10 +4,10 @@ using System.Collections.ObjectModel;
 
 namespace MX.Images.Commands.Refactor
 {
-	public class MapCommand
+	public class SyncMapCommand
 		: IRequest<ReadOnlyCollection<RefactorDirectoryModel>>
 	{
-		public MapCommand(string destinationPath, ReadOnlyCollection<RefactorItemModel> refactorItems)
+		public SyncMapCommand(string destinationPath, ReadOnlyCollection<RefactorItemModel> refactorItems)
 		{
 			DestinationPath = destinationPath;
 			RefactorItems = refactorItems;

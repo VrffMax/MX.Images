@@ -2,10 +2,10 @@ using MediatR;
 
 namespace MX.Images.Commands.Scan
 {
-    public class RootScanCommand
+    public class ScanCommand
         : IRequest
     {
-        public RootScanCommand(string sourcePath) =>
+        public ScanCommand(string sourcePath) =>
             SourcePath = sourcePath;
 
         public string SourcePath { get; }

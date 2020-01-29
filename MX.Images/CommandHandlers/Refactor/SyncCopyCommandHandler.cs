@@ -14,15 +14,15 @@ using System.Threading.Tasks;
 
 namespace MX.Images.CommandHandlers.Refactor
 {
-	public class RefactorCopyCommandHandler
-		: IRequestHandler<RefactorCopyCommand>
+	public class SyncCopyCommandHandler
+		: IRequestHandler<SyncCopyCommand>
 	{
 		private readonly IStorage _storage;
 
-		public RefactorCopyCommandHandler(IStorage storage) =>
+		public SyncCopyCommandHandler(IStorage storage) =>
 			_storage = storage;
 
-		public async Task<Unit> Handle(RefactorCopyCommand request, CancellationToken cancellationToken)
+		public async Task<Unit> Handle(SyncCopyCommand request, CancellationToken cancellationToken)
 		{
 			Console.WriteLine($"Copy {request.RefactorDirectory.Path}");
 

@@ -4,10 +4,10 @@ using System.Collections.ObjectModel;
 
 namespace MX.Images.Commands.Scan
 {
-	public class RepositoryCommand
+	public class ScanRepositoryCommand
 		: IRequest
 	{
-		public RepositoryCommand(ReadOnlyCollection<FileModel> files) =>
+		public ScanRepositoryCommand(ReadOnlyCollection<FileModel> files) =>
 			Files = files;
 
 		public ReadOnlyCollection<FileModel> Files { get; }
