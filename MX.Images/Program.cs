@@ -1,7 +1,6 @@
 ﻿using Autofac;
 using MediatR;
 using MediatR.Extensions.Autofac.DependencyInjection;
-using MX.Images.Commands.Refactor;
 using MX.Images.Commands.Scan;
 using MX.Images.Commands.Verify;
 using MX.Images.Containers;
@@ -13,6 +12,7 @@ using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MX.Images.Commands.Sync;
 
 namespace MX.Images
 {

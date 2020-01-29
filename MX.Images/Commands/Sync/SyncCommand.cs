@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace MX.Images.Commands.Refactor
+namespace MX.Images.Commands.Sync
 {
     public class SyncCommand
         : IRequest

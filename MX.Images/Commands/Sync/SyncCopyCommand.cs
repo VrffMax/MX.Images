@@ -1,7 +1,7 @@
 using MediatR;
 using MX.Images.Models.CQRS;
 
-namespace MX.Images.Commands.Refactor
+namespace MX.Images.Commands.Sync
 {
 	public class SyncCopyCommand
 		: IRequest

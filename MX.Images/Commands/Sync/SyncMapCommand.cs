@@ -1,8 +1,8 @@
+using System.Collections.ObjectModel;
 using MediatR;
 using MX.Images.Models.CQRS;
-using System.Collections.ObjectModel;
 
-namespace MX.Images.Commands.Refactor
+namespace MX.Images.Commands.Sync
 {
 	public class SyncMapCommand
 		: IRequest<ReadOnlyCollection<RefactorDirectoryModel>>

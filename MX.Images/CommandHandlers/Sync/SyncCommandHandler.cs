@@ -1,16 +1,16 @@
-using MediatR;
-using MongoDB.Driver;
-using MX.Images.Commands.Refactor;
-using MX.Images.Interfaces;
-using MX.Images.Models.CQRS;
-using MX.Images.Models.Mongo;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using MongoDB.Driver;
+using MX.Images.Commands.Sync;
+using MX.Images.Interfaces;
+using MX.Images.Models.CQRS;
+using MX.Images.Models.Mongo;
 
-namespace MX.Images.CommandHandlers.Refactor
+namespace MX.Images.CommandHandlers.Sync
 {
 	public class SyncCommandHandler
 		: IRequestHandler<SyncCommand>

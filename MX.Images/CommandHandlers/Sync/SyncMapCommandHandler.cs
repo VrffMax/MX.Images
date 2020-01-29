@@ -1,14 +1,14 @@
-using MediatR;
-using MX.Images.Commands.Refactor;
-using MX.Images.Models.CQRS;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using MX.Images.Commands.Sync;
+using MX.Images.Models.CQRS;
 
-namespace MX.Images.CommandHandlers.Refactor
+namespace MX.Images.CommandHandlers.Sync
 {
 	public class SyncMapCommandHandler
 		: IRequestHandler<SyncMapCommand, ReadOnlyCollection<RefactorDirectoryModel>>

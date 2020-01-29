@@ -1,9 +1,9 @@
+using System.Collections.ObjectModel;
 using MediatR;
 using MX.Images.Models.CQRS;
 using MX.Images.Models.Mongo;
-using System.Collections.ObjectModel;
 
-namespace MX.Images.Commands.Refactor
+namespace MX.Images.Commands.Sync
 {
 	public class SyncCursorCommand
 		: IRequest<ReadOnlyCollection<RefactorItemModel>>
