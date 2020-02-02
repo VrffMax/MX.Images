@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -25,10 +26,25 @@ namespace MX.Images.CommandHandlers.Verify
 
             await Task.WhenAll(fileIsHashEqualTasks);
 
-            var a = fileIsHashEqualTasks
-                .Where(fileIsHashEqualTask => fileIsHashEqualTask.Result.IsHashEqual)
-                .Select(fileIsHashEqualTask => Process(fileIsHashEqualTask.Result.File))
+            var verifyFailedImages = fileIsHashEqualTasks
+                .Where(fileIsHashEqualTask => !fileIsHashEqualTask.Result.IsHashEqual)
+                .Select(fileIsHashEqualTask => fileIsHashEqualTask.Result.File)
                 .ToArray();
+
+            if (verifyFailedImages.Any())
+            {
+                foreach (var verifyFailedImage in verifyFailedImages)
+                {
+                    Console.WriteLine($@"*** Verify failed *** {verifyFailedImage.CopyPath}");
+                }
+
+                var deleteImages = verifyFailedImages
+                    .Select(fileModel => fileModel.Id)
+                    .ToArray();
+
+                var deleteFilter = Builders<FileModel>.Filter.In(fileModel => fileModel.Id, deleteImages);
+                await _storage.Images.Value.DeleteManyAsync(deleteFilter, cancellationToken);
+            }
 
             return Unit.Value;
         }
@@ -38,12 +54,6 @@ namespace MX.Images.CommandHandlers.Verify
             using var md5 = MD5.Create();
             using var fileStream = new FileStream(file.CopyPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             return Task.FromResult((file, md5.ComputeHash(fileStream).SequenceEqual(file.Hash)));
-        }
-
-        private async Task Process(FileModel file)
-        {
-            var filter = Builders<FileModel>.Filter.Eq(fileModel => fileModel.Id, file.Id);
-            await _storage.Images.Value.DeleteOneAsync(filter);
         }
     }
 }
