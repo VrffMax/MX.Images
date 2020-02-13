@@ -2,7 +2,9 @@ using MediatR;
 using MongoDB.Driver;
 using MX.Images.Commands.Scan;
 using MX.Images.Interfaces;
+using MX.Images.Models;
 using MX.Images.Models.Mongo;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -15,13 +17,17 @@ namespace MX.Images.CommandHandlers.Scan
     {
         private readonly IStorage _storageFindInsert;
         private readonly IStorage _storageDelete;
+        private readonly IState _state;
+
 
         public ScanRepositoryCommandHandler(
             IStorage storageFindInsert,
-            IStorage storageDelete)
+            IStorage storageDelete,
+            IState state)
         {
             _storageFindInsert = storageFindInsert;
             _storageDelete = storageDelete;
+            _state = state;
         }
 
         public async Task<Unit> Handle(ScanRepositoryCommand request, CancellationToken cancellationToken)
@@ -57,11 +63,24 @@ namespace MX.Images.CommandHandlers.Scan
                     .Include(fileModel => fileModel.Name)
             };
 
-            var storageImages =
-                (await (await _storageFindInsert.Images.Value.FindAsync(findFilter, findOptions)).ToListAsync())
-                .AsReadOnly();
+            try
+            {
+                var storageImages =
+                    (await (await _storageFindInsert.Images.Value.FindAsync(findFilter, findOptions)).ToListAsync())
+                    .AsReadOnly();
 
-            return storageImages;
+                return storageImages;
+            }
+
+            catch (Exception exception)
+            {
+                var message = $"*** Error *** {exception.Message}";
+
+                Console.WriteLine(message);
+                _state.Messages.Enqueue(message);
+
+                return Array.AsReadOnly(new FileModel[] { });
+            }
         }
 
         private async Task InsertNewImages(

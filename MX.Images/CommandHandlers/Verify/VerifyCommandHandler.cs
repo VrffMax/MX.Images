@@ -6,6 +6,7 @@ using MediatR;
 using MongoDB.Driver;
 using MX.Images.Commands.Verify;
 using MX.Images.Interfaces;
+using MX.Images.Models;
 using MX.Images.Models.Mongo;
 
 namespace MX.Images.CommandHandlers.Verify
@@ -16,15 +17,18 @@ namespace MX.Images.CommandHandlers.Verify
         private readonly IMediator _mediator;
         private readonly IStorage _storage;
         private readonly IOptions _options;
+        private readonly IState _state;
 
         public VerifyCommandHandler(
             IMediator mediator,
             IStorage storage,
-            IOptions options)
+            IOptions options,
+            IState state)
         {
             _mediator = mediator;
             _storage = storage;
             _options = options;
+            _state = state;
         }
 
         public async Task<Unit> Handle(VerifyCommand request, CancellationToken cancellationToken)
@@ -45,18 +49,32 @@ namespace MX.Images.CommandHandlers.Verify
             };
 
             var verifyCursorTasks = new Task[0];
-            var filesCursor = await _storage.Images.Value.FindAsync(findFilter, findOptions, cancellationToken);
 
-            while (await filesCursor.MoveNextAsync(cancellationToken))
+            try
             {
-                verifyCursorTasks = verifyCursorTasks.Append(_mediator.Send(
-                    new VerifyCursorCommand(Array.AsReadOnly(filesCursor.Current.ToArray())),
-                    cancellationToken)).ToArray();
+                var filesCursor = await _storage.Images.Value.FindAsync(findFilter, findOptions, cancellationToken);
+
+                while (await filesCursor.MoveNextAsync(cancellationToken))
+                {
+                    verifyCursorTasks = verifyCursorTasks.Append(_mediator.Send(
+                        new VerifyCursorCommand(Array.AsReadOnly(filesCursor.Current.ToArray())),
+                        cancellationToken)).ToArray();
+                }
+
+                await Task.WhenAll(verifyCursorTasks);
+
+                return Unit.Value;
             }
 
-            await Task.WhenAll(verifyCursorTasks);
+            catch (Exception exception)
+            {
+                var message = $"*** Error *** {exception.Message}";
 
-            return Unit.Value;
+                Console.WriteLine(message);
+                _state.Messages.Enqueue(message);
+
+                return Unit.Value;
+            }
         }
     }
 }

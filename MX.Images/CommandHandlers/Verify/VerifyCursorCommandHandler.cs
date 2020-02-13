@@ -8,6 +8,7 @@ using MediatR;
 using MongoDB.Driver;
 using MX.Images.Commands.Verify;
 using MX.Images.Interfaces;
+using MX.Images.Models;
 using MX.Images.Models.Mongo;
 
 namespace MX.Images.CommandHandlers.Verify
@@ -15,6 +16,11 @@ namespace MX.Images.CommandHandlers.Verify
     public class VerifyCursorCommandHandler
         : IRequestHandler<VerifyCursorCommand, Unit>
     {
+        private readonly IState _state;
+
+        public VerifyCursorCommandHandler(IState state) =>
+            _state = state;
+
         public async Task<Unit> Handle(VerifyCursorCommand request, CancellationToken cancellationToken)
         {
             var fileIsHashEqualTasks = request.Files.Select(IsFileCopyHashEqualAsync).ToArray();
@@ -56,7 +62,19 @@ namespace MX.Images.CommandHandlers.Verify
 
         private Task FileCopy(string sourceFile, string destinationFile)
         {
-            File.Copy(sourceFile, destinationFile, true);
+            try
+            {
+                File.Copy(sourceFile, destinationFile, true);
+            }
+
+            catch (Exception exception)
+            {
+                var message = $"*** Error *** {exception.Message}";
+
+                Console.WriteLine(message);
+                _state.Messages.Enqueue(message);
+            }
+
             return Task.CompletedTask;
         }
     }

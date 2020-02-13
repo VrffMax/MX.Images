@@ -9,6 +9,7 @@ using MediatR;
 using MongoDB.Driver;
 using MX.Images.Commands.Sync;
 using MX.Images.Interfaces;
+using MX.Images.Models;
 using MX.Images.Models.CQRS;
 using MX.Images.Models.Mongo;
 
@@ -18,9 +19,15 @@ namespace MX.Images.CommandHandlers.Sync
         : IRequestHandler<SyncCopyCommand>
     {
         private readonly IStorage _storage;
+        private readonly IState _state;
 
-        public SyncCopyCommandHandler(IStorage storage) =>
+        public SyncCopyCommandHandler(
+            IStorage storage,
+            IState state)
+        {
             _storage = storage;
+            _state = state;
+        }
 
         public async Task<Unit> Handle(SyncCopyCommand request, CancellationToken cancellationToken)
         {
@@ -120,7 +127,19 @@ namespace MX.Images.CommandHandlers.Sync
 
         private Task FileCopy(string sourceFile, string destinationFile)
         {
-            File.Copy(sourceFile, destinationFile, true);
+            try
+            {
+                File.Copy(sourceFile, destinationFile, true);
+            }
+
+            catch (Exception exception)
+            {
+                var message = $"*** Error *** {exception.Message}";
+
+                Console.WriteLine(message);
+                _state.Messages.Enqueue(message);
+            }
+
             return Task.CompletedTask;
         }
     }
