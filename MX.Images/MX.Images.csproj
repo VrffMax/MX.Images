@@ -5,6 +5,8 @@
         <TargetFramework>netcoreapp3.0</TargetFramework>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " />
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' " />
     <ItemGroup>
       <PackageReference Include="Autofac" Version="4.9.4" />
       <PackageReference Include="MediatR.Extensions.Autofac.DependencyInjection" Version="4.0.0" />

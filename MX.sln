@@ -1,5 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MX.Images", "MX.Images\MX.Images.csproj", "{B4DFB93F-FCC2-4218-A366-F1C0FAD8A717}"
 EndProject
 Global

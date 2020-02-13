@@ -15,11 +15,6 @@ namespace MX.Images.CommandHandlers.Verify
     public class VerifyCursorCommandHandler
         : IRequestHandler<VerifyCursorCommand, Unit>
     {
-        private readonly IStorage _storage;
-
-        public VerifyCursorCommandHandler(IStorage storage) =>
-            _storage = storage;
-
         public async Task<Unit> Handle(VerifyCursorCommand request, CancellationToken cancellationToken)
         {
             var fileIsHashEqualTasks = request.Files.Select(IsFileCopyHashEqualAsync).ToArray();
@@ -38,12 +33,15 @@ namespace MX.Images.CommandHandlers.Verify
                     Console.WriteLine($@"*** Verify failed *** {verifyFailedImage.CopyPath}");
                 }
 
-                var deleteImages = verifyFailedImages
-                    .Select(fileModel => fileModel.Id)
-                    .ToArray();
+                var recopyFailedImageTasks = verifyFailedImages.Select(fileModel => new
+                {
+                    SourceFile = Path.Combine(fileModel.Path, fileModel.Name),
+                    DestinationFile = fileModel.CopyPath
+                })
+                .Select(context => this.FileCopy(context.SourceFile, context.DestinationFile))
+                .ToArray();
 
-                var deleteFilter = Builders<FileModel>.Filter.In(fileModel => fileModel.Id, deleteImages);
-                await _storage.Images.Value.DeleteManyAsync(deleteFilter, cancellationToken);
+                await Task.WhenAll(recopyFailedImageTasks);
             }
 
             return Unit.Value;
@@ -54,6 +52,12 @@ namespace MX.Images.CommandHandlers.Verify
             using var md5 = MD5.Create();
             using var fileStream = new FileStream(file.CopyPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             return Task.FromResult((file, md5.ComputeHash(fileStream).SequenceEqual(file.Hash)));
+        }
+
+        private Task FileCopy(string sourceFile, string destinationFile)
+        {
+            File.Copy(sourceFile, destinationFile, true);
+            return Task.CompletedTask;
         }
     }
 }

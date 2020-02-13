@@ -38,6 +38,8 @@ namespace MX.Images.CommandHandlers.Verify
             {
                 Projection = Builders<FileModel>.Projection
                     .Include(fileModel => fileModel.Id)
+                    .Include(fileModel => fileModel.Path)
+                    .Include(fileModel => fileModel.Name)
                     .Include(fileModel => fileModel.CopyPath)
                     .Include(fileModel => fileModel.Hash)
             };
