@@ -71,7 +71,7 @@ namespace MX.Images.CommandHandlers.Verify
                 var message = $"*** Error *** {exception.Message}";
 
                 Console.WriteLine(message);
-                _state.Messages.Enqueue(message);
+                _state.Errors.Enqueue(message);
 
                 return Unit.Value;
             }

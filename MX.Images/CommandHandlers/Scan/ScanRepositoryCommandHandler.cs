@@ -77,7 +77,7 @@ namespace MX.Images.CommandHandlers.Scan
                 var message = $"*** Error *** {exception.Message}";
 
                 Console.WriteLine(message);
-                _state.Messages.Enqueue(message);
+                _state.Errors.Enqueue(message);
 
                 return Array.AsReadOnly(new FileModel[] { });
             }

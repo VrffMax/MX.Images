@@ -29,7 +29,7 @@ namespace MX.Images
         private const string SourcePath = "[Source path]";
         private const string DestinationPath = "[Destination path]";
 
-        private static readonly Dictionary<CommandEnum, (string Help, int Parameters)> CommandHelp = new Dictionary<CommandEnum, (string, int)>
+        private static readonly Dictionary<CommandEnum, (string Help, int Parameters)> _commandHelp = new Dictionary<CommandEnum, (string, int)>
         {
             {CommandEnum.Help, ($"{MxImage} {CommandEnum.Help}", 0)},
             {CommandEnum.Scan, ($"{MxImage} {CommandEnum.Scan} {SourcePath}", 1)},
@@ -39,6 +39,7 @@ namespace MX.Images
         };
 
         private static readonly IMediator _mediator;
+        private static readonly IState _state;
 
         static Program()
         {
@@ -49,7 +50,10 @@ namespace MX.Images
             builder.RegisterType<Storage>().As<IStorage>();
             builder.AddMediatR(typeof(Program).Assembly);
 
-            _mediator = builder.Build().Resolve<IMediator>();
+            var container = builder.Build();
+
+            _mediator = container.Resolve<IMediator>();
+            _state = container.Resolve<IState>();
         }
 
         private static async Task Main(string[] args)
@@ -58,20 +62,14 @@ namespace MX.Images
 
             if (queue.Count == 0 || !Enum.TryParse<CommandEnum>(queue.Dequeue(), true, out var command))
             {
-                Console.WriteLine(CommandHelp[CommandEnum.Help]);
+                Console.WriteLine(_commandHelp[CommandEnum.Help]);
                 return;
             }
 
             Console.WriteLine(command);
             Console.WriteLine();
 
-            if (command == CommandEnum.Help)
-            {
-                Console.WriteLine(string.Join(Environment.NewLine, CommandHelp.Values.Select(value => value.Help)));
-                return;
-            }
-
-            var commandHelp = CommandHelp[command];
+            var commandHelp = _commandHelp[command];
 
             if (queue.Count != commandHelp.Parameters)
             {
@@ -81,6 +79,10 @@ namespace MX.Images
 
             switch (command)
             {
+                case CommandEnum.Help:
+                    Console.WriteLine(string.Join(Environment.NewLine, _commandHelp.Values.Select(value => value.Help)));
+                    return;
+
                 case CommandEnum.Scan:
                     await _mediator.Send(new ScanCommand(queue.Dequeue()));
                     break;

@@ -6,8 +6,8 @@ namespace MX.Images.Models
         : IState
     {
         public State() =>
-            Messages = new ConcurrentQueue<string>();
+            Errors = new ConcurrentQueue<string>();
 
-        public ConcurrentQueue<string> Messages { get; }
+        public ConcurrentQueue<string> Errors { get; }
     }
 }

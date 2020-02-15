@@ -49,7 +49,7 @@ namespace MX.Images.CommandHandlers.Scan
                             {
                                 Directory = tag.DirectoryName,
                                 Name = tag.Name,
-                                Description = tag.Description,
+                                Description = tag.Description?.Trim(),
                                 Type = tag.Type
                             }).ToArray())
                 });
@@ -59,7 +59,7 @@ namespace MX.Images.CommandHandlers.Scan
                 var message = $@"*** Warning *** ""{Path.GetFileName(request.File)}"" & ""{nameof(ImageProcessingException)}""";
 
                 Console.WriteLine(message);
-                _state.Messages.Enqueue(message);
+                _state.Errors.Enqueue(message);
 
                 return Task.FromResult<FileModel>(default);
             }

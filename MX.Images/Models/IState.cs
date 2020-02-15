@@ -5,6 +5,6 @@ namespace MX.Images.Models
 {
     public interface IState
     {
-        public ConcurrentQueue<string> Messages { get; }
+        public ConcurrentQueue<string> Errors { get; }
     }
 }
