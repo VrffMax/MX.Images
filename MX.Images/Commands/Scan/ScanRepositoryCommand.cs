@@ -1,15 +1,17 @@
+using System.Collections.ObjectModel;
 using MediatR;
 using MX.Images.Models.Mongo;
-using System.Collections.ObjectModel;
 
 namespace MX.Images.Commands.Scan
 {
-	public class ScanRepositoryCommand
-		: IRequest
-	{
-		public ScanRepositoryCommand(ReadOnlyCollection<FileModel> files) =>
-			Files = files;
+    public class ScanRepositoryCommand
+        : IRequest
+    {
+        public ScanRepositoryCommand(ReadOnlyCollection<FileModel> files)
+        {
+            Files = files;
+        }
 
-		public ReadOnlyCollection<FileModel> Files { get; }
-	}
+        public ReadOnlyCollection<FileModel> Files { get; }
+    }
 }

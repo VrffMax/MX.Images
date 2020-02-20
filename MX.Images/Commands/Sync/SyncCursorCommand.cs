@@ -5,12 +5,14 @@ using MX.Images.Models.Mongo;
 
 namespace MX.Images.Commands.Sync
 {
-	public class SyncCursorCommand
-		: IRequest<ReadOnlyCollection<RefactorItemModel>>
-	{
-		public SyncCursorCommand(ReadOnlyCollection<FileModel> files) =>
-			Files = files;
+    public class SyncCursorCommand
+        : IRequest<ReadOnlyCollection<RefactorItemModel>>
+    {
+        public SyncCursorCommand(ReadOnlyCollection<FileModel> files)
+        {
+            Files = files;
+        }
 
-		public ReadOnlyCollection<FileModel> Files { get; }
-	}
+        public ReadOnlyCollection<FileModel> Files { get; }
+    }
 }

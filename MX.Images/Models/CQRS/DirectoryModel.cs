@@ -5,8 +5,10 @@ namespace MX.Images.Models.CQRS
 {
     public class DirectoryModel
     {
-        public DirectoryModel() =>
+        public DirectoryModel()
+        {
             Directories = Files = Array.AsReadOnly(new string[0]);
+        }
 
         public DirectoryModel(
             ReadOnlyCollection<string> directories,

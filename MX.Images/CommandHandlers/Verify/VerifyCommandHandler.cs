@@ -15,9 +15,9 @@ namespace MX.Images.CommandHandlers.Verify
         : IRequestHandler<VerifyCommand, Unit>
     {
         private readonly IMediator _mediator;
-        private readonly IStorage _storage;
         private readonly IOptions _options;
         private readonly IState _state;
+        private readonly IStorage _storage;
 
         public VerifyCommandHandler(
             IMediator mediator,
@@ -55,11 +55,9 @@ namespace MX.Images.CommandHandlers.Verify
                 var filesCursor = await _storage.Images.Value.FindAsync(findFilter, findOptions, cancellationToken);
 
                 while (await filesCursor.MoveNextAsync(cancellationToken))
-                {
                     verifyCursorTasks = verifyCursorTasks.Append(_mediator.Send(
                         new VerifyCursorCommand(Array.AsReadOnly(filesCursor.Current.ToArray())),
                         cancellationToken)).ToArray();
-                }
 
                 await Task.WhenAll(verifyCursorTasks);
 

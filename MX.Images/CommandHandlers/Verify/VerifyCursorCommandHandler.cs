@@ -5,9 +5,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using MongoDB.Driver;
 using MX.Images.Commands.Verify;
-using MX.Images.Interfaces;
 using MX.Images.Models;
 using MX.Images.Models.Mongo;
 
@@ -18,8 +16,10 @@ namespace MX.Images.CommandHandlers.Verify
     {
         private readonly IState _state;
 
-        public VerifyCursorCommandHandler(IState state) =>
+        public VerifyCursorCommandHandler(IState state)
+        {
             _state = state;
+        }
 
         public async Task<Unit> Handle(VerifyCursorCommand request, CancellationToken cancellationToken)
         {
@@ -35,17 +35,15 @@ namespace MX.Images.CommandHandlers.Verify
             if (verifyFailedImages.Any())
             {
                 foreach (var verifyFailedImage in verifyFailedImages)
-                {
                     Console.WriteLine($@"*** Verify failed *** {verifyFailedImage.CopyPath}");
-                }
 
                 var recopyFailedImageTasks = verifyFailedImages.Select(fileModel => new
-                {
-                    SourceFile = Path.Combine(fileModel.Path, fileModel.Name),
-                    DestinationFile = fileModel.CopyPath
-                })
-                .Select(context => this.FileCopy(context.SourceFile, context.DestinationFile))
-                .ToArray();
+                    {
+                        SourceFile = Path.Combine(fileModel.Path, fileModel.Name),
+                        DestinationFile = fileModel.CopyPath
+                    })
+                    .Select(context => FileCopy(context.SourceFile, context.DestinationFile))
+                    .ToArray();
 
                 await Task.WhenAll(recopyFailedImageTasks);
             }

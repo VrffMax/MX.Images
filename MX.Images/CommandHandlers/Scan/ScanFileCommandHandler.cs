@@ -1,14 +1,14 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
 using MetadataExtractor;
 using MX.Images.Commands.Scan;
 using MX.Images.Interfaces;
 using MX.Images.Models;
 using MX.Images.Models.Mongo;
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MX.Images.CommandHandlers.Scan
 {
@@ -56,7 +56,8 @@ namespace MX.Images.CommandHandlers.Scan
             }
             catch (ImageProcessingException)
             {
-                var message = $@"*** Warning *** ""{Path.GetFileName(request.File)}"" & ""{nameof(ImageProcessingException)}""";
+                var message =
+                    $@"*** Warning *** ""{Path.GetFileName(request.File)}"" & ""{nameof(ImageProcessingException)}""";
 
                 Console.WriteLine(message);
                 _state.Errors.Enqueue(message);

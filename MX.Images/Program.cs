@@ -16,27 +16,19 @@ namespace MX.Images
 {
     public static class Program
     {
-        private enum CommandEnum
-        {
-            Help,
-            Scan,
-            Sync,
-            ScanSync,
-            Verify
-        }
-
         private const string MxImage = "MX.Image";
         private const string SourcePath = "[Source path]";
         private const string DestinationPath = "[Destination path]";
 
-        private static readonly Dictionary<CommandEnum, (string Help, int Parameters)> _commandHelp = new Dictionary<CommandEnum, (string, int)>
-        {
-            {CommandEnum.Help, ($"{MxImage} {CommandEnum.Help}", 0)},
-            {CommandEnum.Scan, ($"{MxImage} {CommandEnum.Scan} {SourcePath}", 1)},
-            {CommandEnum.Sync, ($"{MxImage} {CommandEnum.Sync} {SourcePath} {DestinationPath}", 2)},
-            {CommandEnum.ScanSync, ($"{MxImage} {CommandEnum.ScanSync} {SourcePath} {DestinationPath}", 2)},
-            {CommandEnum.Verify, ($"{MxImage} {CommandEnum.Verify} {SourcePath}", 1)}
-        };
+        private static readonly Dictionary<CommandEnum, (string Help, int Parameters)> _commandHelp =
+            new Dictionary<CommandEnum, (string, int)>
+            {
+                {CommandEnum.Help, ($"{MxImage} {CommandEnum.Help}", 0)},
+                {CommandEnum.Scan, ($"{MxImage} {CommandEnum.Scan} {SourcePath}", 1)},
+                {CommandEnum.Sync, ($"{MxImage} {CommandEnum.Sync} {SourcePath} {DestinationPath}", 2)},
+                {CommandEnum.ScanSync, ($"{MxImage} {CommandEnum.ScanSync} {SourcePath} {DestinationPath}", 2)},
+                {CommandEnum.Verify, ($"{MxImage} {CommandEnum.Verify} {SourcePath}", 1)}
+            };
 
         private static readonly IMediator _mediator;
         private static readonly IState _state;
@@ -80,7 +72,8 @@ namespace MX.Images
             switch (command)
             {
                 case CommandEnum.Help:
-                    Console.WriteLine(string.Join(Environment.NewLine, _commandHelp.Values.Select(value => value.Help)));
+                    Console.WriteLine(string.Join(Environment.NewLine,
+                        _commandHelp.Values.Select(value => value.Help)));
                     return;
 
                 case CommandEnum.Scan:
@@ -107,6 +100,15 @@ namespace MX.Images
         {
             await mediator.Send(new ScanCommand(sourcePath));
             await mediator.Send(new SyncCommand(sourcePath, destinationPath));
+        }
+
+        private enum CommandEnum
+        {
+            Help,
+            Scan,
+            Sync,
+            ScanSync,
+            Verify
         }
     }
 }

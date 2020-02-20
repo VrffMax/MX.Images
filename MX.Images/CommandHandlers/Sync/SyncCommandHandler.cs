@@ -17,9 +17,9 @@ namespace MX.Images.CommandHandlers.Sync
         : IRequestHandler<SyncCommand>
     {
         private readonly IMediator _mediator;
-        private readonly IStorage _storage;
         private readonly IOptions _options;
         private readonly IState _state;
+        private readonly IStorage _storage;
 
         public SyncCommandHandler(
             IMediator mediator,
@@ -57,11 +57,9 @@ namespace MX.Images.CommandHandlers.Sync
                 var filesCursor = await _storage.Images.Value.FindAsync(findFilter, findOptions, cancellationToken);
 
                 while (await filesCursor.MoveNextAsync(cancellationToken))
-                {
                     refactorCursorTasks = refactorCursorTasks.Append(_mediator.Send(
                         new SyncCursorCommand(Array.AsReadOnly(filesCursor.Current.ToArray())),
                         cancellationToken)).ToArray();
-                }
 
                 await Task.WhenAll(refactorCursorTasks);
 

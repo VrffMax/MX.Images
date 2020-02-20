@@ -2,12 +2,14 @@
 
 namespace MX.Images.Commands.Verify
 {
-	public class VerifyCommand
-		: IRequest
-	{
-		public VerifyCommand(string sourcePath) =>
-			SourcePath = sourcePath;
+    public class VerifyCommand
+        : IRequest
+    {
+        public VerifyCommand(string sourcePath)
+        {
+            SourcePath = sourcePath;
+        }
 
-		public string SourcePath { get; }
-	}
+        public string SourcePath { get; }
+    }
 }

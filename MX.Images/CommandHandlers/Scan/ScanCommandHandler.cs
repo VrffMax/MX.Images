@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using MX.Images.Commands;
 using MX.Images.Commands.Scan;
 
 namespace MX.Images.CommandHandlers.Scan
@@ -13,8 +12,10 @@ namespace MX.Images.CommandHandlers.Scan
     {
         private readonly IMediator _mediator;
 
-        public ScanCommandHandler(IMediator mediator) =>
+        public ScanCommandHandler(IMediator mediator)
+        {
             _mediator = mediator;
+        }
 
         public async Task<Unit> Handle(ScanCommand request, CancellationToken cancellationToken)
         {

@@ -18,8 +18,8 @@ namespace MX.Images.CommandHandlers.Sync
     public class SyncCopyCommandHandler
         : IRequestHandler<SyncCopyCommand>
     {
-        private readonly IStorage _storage;
         private readonly IState _state;
+        private readonly IStorage _storage;
 
         public SyncCopyCommandHandler(
             IStorage storage,
@@ -54,10 +54,7 @@ namespace MX.Images.CommandHandlers.Sync
             string destinationFile,
             CancellationToken cancellationToken)
         {
-            if (Directory.Exists(destinationFile))
-            {
-                Directory.Delete(destinationFile, true);
-            }
+            if (Directory.Exists(destinationFile)) Directory.Delete(destinationFile, true);
 
             return CopyFileAsync(file.Sources.Single(), destinationFile, cancellationToken);
         }
@@ -67,10 +64,7 @@ namespace MX.Images.CommandHandlers.Sync
             string destinationPath,
             CancellationToken cancellationToken)
         {
-            if (File.Exists(destinationPath))
-            {
-                File.Delete(destinationPath);
-            }
+            if (File.Exists(destinationPath)) File.Delete(destinationPath);
 
             Directory.CreateDirectory(destinationPath);
 
@@ -94,10 +88,7 @@ namespace MX.Images.CommandHandlers.Sync
             var sourceFile = Path.Combine(source.Path, source.Name);
             var lastWriteTimeUtc = File.GetLastWriteTimeUtc(sourceFile);
 
-            if (source.LastWriteTimeUtc == lastWriteTimeUtc && File.Exists(destinationFile))
-            {
-                return Task.CompletedTask;
-            }
+            if (source.LastWriteTimeUtc == lastWriteTimeUtc && File.Exists(destinationFile)) return Task.CompletedTask;
 
             var filter = Builders<FileModel>.Filter.Where(fileModel => fileModel.Id == source.Id);
             var update = Builders<FileModel>.Update
@@ -107,7 +98,7 @@ namespace MX.Images.CommandHandlers.Sync
 
             return Task.WhenAll(
                 _storage.Images.Value.UpdateOneAsync(filter, update, default, cancellationToken),
-                this.FileCopy(sourceFile, destinationFile)
+                FileCopy(sourceFile, destinationFile)
             );
         }
 

@@ -1,23 +1,23 @@
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
 using MongoDB.Driver;
 using MX.Images.Commands.Scan;
 using MX.Images.Interfaces;
 using MX.Images.Models;
 using MX.Images.Models.Mongo;
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MX.Images.CommandHandlers.Scan
 {
     public class ScanRepositoryCommandHandler
         : IRequestHandler<ScanRepositoryCommand>
     {
-        private readonly IStorage _storageFindInsert;
-        private readonly IStorage _storageDelete;
         private readonly IState _state;
+        private readonly IStorage _storageDelete;
+        private readonly IStorage _storageFindInsert;
 
 
         public ScanRepositoryCommandHandler(
@@ -32,10 +32,7 @@ namespace MX.Images.CommandHandlers.Scan
 
         public async Task<Unit> Handle(ScanRepositoryCommand request, CancellationToken cancellationToken)
         {
-            if (!request.Files.Any())
-            {
-                return Unit.Value;
-            }
+            if (!request.Files.Any()) return Unit.Value;
 
             var path = request.Files.Select(fileModel => fileModel.Path).First();
             var storageImages = await GetStorageImages(path, request.Files);
@@ -94,10 +91,8 @@ namespace MX.Images.CommandHandlers.Scan
                 .ToArray();
 
             if (insertImages.Any())
-            {
                 await _storageFindInsert.Images.Value.InsertManyAsync(insertImages,
                     cancellationToken: cancellationToken);
-            }
         }
 
         private async Task DeleteNotExistsImages(
