@@ -49,20 +49,32 @@ namespace MX.Images
 
         private static async Task Main(string[] args)
         {
-            var argsQueue = new Queue<string>(args);
-
-            if (argsQueue.Count == 0 || !Enum.TryParse<CommandEnum>(argsQueue.Dequeue(), true, out var command))
+            await (new CommandLine(args) switch
             {
-                await CommandEnum.Help.Help();
-                return;
-            }
+                var (command, sourcePath)
+                when command == CommandEnum.Scan => Mediator.Send(new ScanCommand(sourcePath)),
 
-            Console.WriteLine(command);
-            Console.WriteLine();
+                var (command, sourcePath, destinationPath)
+                when command == CommandEnum.Sync => Mediator.Send(new SyncCommand(sourcePath, destinationPath)),
 
-            await command.Handle(argsQueue);
+                var (command, sourcePath, destinationPath)
+                when command == CommandEnum.ScanSync => ScanSync(Mediator, sourcePath, destinationPath),
 
-            Console.WriteLine("Done");
+                var (command, sourcePath)
+                when command == CommandEnum.Verify => Mediator.Send(new VerifyCommand(sourcePath)),
+
+                var (command)
+                when command != CommandEnum.Help => command.Help(),
+
+                _ => Help()
+            });
+        }
+
+        private static async Task<Unit> ScanSync(IMediator mediator, string sourcePath, string destinationPath)
+        {
+            await mediator.Send(new ScanCommand(sourcePath));
+            await mediator.Send(new SyncCommand(sourcePath, destinationPath));
+            return Unit.Value;
         }
 
         private static Task<Unit> Help()
@@ -71,28 +83,10 @@ namespace MX.Images
             return Task.FromResult(Unit.Value);
         }
 
-        private static Task<Unit> One(CommandEnum command, string sourcePath, Func<Task<Unit>> commandFunc) =>
-            command switch
-            {
-                CommandEnum.Scan => Mediator.Send(new ScanCommand(sourcePath)),
-                CommandEnum.Verify => Mediator.Send(new VerifyCommand(sourcePath)),
-                _ => commandFunc()
-            };
-
-        private static Task<Unit> Two(CommandEnum command, string sourcePath, string destinationPath,
-            Func<Task<Unit>> commandFunc) =>
-            command switch
-            {
-                CommandEnum.Sync => Mediator.Send(new SyncCommand(sourcePath, destinationPath)),
-                CommandEnum.ScanSync => ScanSync(Mediator, sourcePath, destinationPath),
-                _ => commandFunc()
-            };
-
-        private static async Task<Unit> ScanSync(IMediator mediator, string sourcePath, string destinationPath)
+        private static Task<Unit> Help(this CommandEnum command)
         {
-            await mediator.Send(new ScanCommand(sourcePath));
-            await mediator.Send(new SyncCommand(sourcePath, destinationPath));
-            return Unit.Value;
+            Console.WriteLine(CommandHelp[command]);
+            return Task.FromResult(Unit.Value);
         }
 
         private enum CommandEnum
@@ -104,28 +98,48 @@ namespace MX.Images
             Verify
         }
 
-        private static Task<Unit> Help(this CommandEnum command)
+        private class CommandLine
         {
-            Console.WriteLine(CommandHelp[command]);
-            return Task.FromResult(Unit.Value);
-        }
+            private readonly CommandEnum _command = CommandEnum.Help;
 
-        private static Task<Unit> Handle(this CommandEnum command, Queue<string> argsQueue)
-        {
-            if (argsQueue.TryDequeue(out var sourcePath))
+            private readonly string _sourcePath;
+            private readonly string _destinationPath;
+
+            public CommandLine(string[] args)
             {
-                return One(command, sourcePath, () =>
-                {
-                    if (argsQueue.TryDequeue(out var destinationPath))
-                    {
-                        return Two(command, sourcePath, destinationPath, () => command.Help());
-                    }
+                var argsQueue = new Queue<string>(args);
 
-                    return command.Help();
-                });
+                if (argsQueue.Any() && Enum.TryParse<CommandEnum>(argsQueue.Dequeue(), true, out var command))
+                {
+                    _command = command;
+                }
+
+                if (argsQueue.Any())
+                {
+                    _sourcePath = argsQueue.Dequeue();
+                }
+
+                if (argsQueue.Any())
+                {
+                    _destinationPath = argsQueue.Dequeue();
+                }
             }
 
-            return Help();
+            public void Deconstruct(out CommandEnum command) =>
+                command = _command;
+
+            public void Deconstruct(out CommandEnum command, out string sourcePath)
+            {
+                command = _command;
+                sourcePath = _sourcePath;
+            }
+
+            public void Deconstruct(out CommandEnum command, out string sourcePath, out string destinationPath)
+            {
+                command = _command;
+                sourcePath = _sourcePath;
+                destinationPath = _destinationPath;
+            }
         }
     }
 }
