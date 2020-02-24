@@ -47,9 +47,11 @@ namespace MX.Images
             Mediator = container.Resolve<IMediator>();
         }
 
-        private static async Task Main(string[] args)
-        {
-            await (new CommandLine(args) switch
+        private static Task Main(string[] args) =>
+            Handle(args);
+
+        private static Task Handle(string[] args) =>
+            new CommandLine(args) switch
             {
                 var (command, sourcePath)
                 when command == CommandEnum.Scan => Mediator.Send(new ScanCommand(sourcePath)),
@@ -67,8 +69,7 @@ namespace MX.Images
                 when command != CommandEnum.Help => command.Help(),
 
                 _ => Help()
-            });
-        }
+            };
 
         private static async Task<Unit> ScanSync(IMediator mediator, string sourcePath, string destinationPath)
         {
