@@ -16,7 +16,9 @@ namespace MX.Images
 {
 	public static class Program
 	{
-		private const string MxImage = "MX.ImaØge";
+		private const string ResultPrefix = "*** Result ***";
+
+		private const string MxImage = "MX.Image";
 		private const string SourcePath = "[Source path]";
 		private const string DestinationPath = "[Destination path]";
 
@@ -49,9 +51,14 @@ namespace MX.Images
 
 		private static async Task Main(string[] args)
 		{
-			await Handle(args);
+			var ticks = Environment.TickCount64;
+			{
+				await Handle(args);
 
-			foreach (var message in State.Messages) Console.WriteLine(message);
+				Console.WriteLine(ResultPrefix);
+				foreach (var message in State.Messages) Console.WriteLine(message);
+			}
+			Console.WriteLine($"Ticks\t{Environment.TickCount64 - ticks}");
 		}
 
 		private static Task Handle(string[] args)
