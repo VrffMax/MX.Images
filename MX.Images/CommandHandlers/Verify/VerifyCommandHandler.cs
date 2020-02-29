@@ -63,13 +63,9 @@ namespace MX.Images.CommandHandlers.Verify
 
                 return Unit.Value;
             }
-
             catch (Exception exception)
             {
-                var message = $"*** Error *** {exception.Message}";
-
-                Console.WriteLine(message);
-                _state.Errors.Enqueue(message);
+                _state.Log(nameof(VerifyCommandHandler), exception.Message);
 
                 return Unit.Value;
             }

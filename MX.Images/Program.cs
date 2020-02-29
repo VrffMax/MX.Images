@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
-using Autofac.Core.Activators.Reflection;
 using MediatR;
 using MediatR.Extensions.Autofac.DependencyInjection;
-using MongoDB.Driver;
 using MX.Images.Commands.Scan;
 using MX.Images.Commands.Sync;
 using MX.Images.Commands.Verify;
@@ -18,7 +16,7 @@ namespace MX.Images
 {
     public static class Program
     {
-        private const string MxImage = "MX.Image";
+        private const string MxImage = "MX.ImaØge";
         private const string SourcePath = "[Source path]";
         private const string DestinationPath = "[Destination path]";
 
@@ -32,6 +30,7 @@ namespace MX.Images
         };
 
         private static readonly IMediator Mediator;
+        private static readonly IState State;
 
         static Program()
         {
@@ -45,13 +44,21 @@ namespace MX.Images
             var container = builder.Build();
 
             Mediator = container.Resolve<IMediator>();
+            State = container.Resolve<IState>();
         }
 
-        private static Task Main(string[] args) =>
+        private static Task Main(string[] args)
+        {
             Handle(args);
 
-        private static Task Handle(string[] args) =>
-            new CommandLine(args) switch
+            foreach (var message in State.Messages) Console.WriteLine(message);
+
+            return Task.CompletedTask;
+        }
+
+        private static Task Handle(string[] args)
+        {
+            return new CommandLine(args) switch
             {
                 var (command, sourcePath)
                 when command == CommandEnum.Scan => Mediator.Send(new ScanCommand(sourcePath)),
@@ -70,6 +77,7 @@ namespace MX.Images
 
                 _ => Help()
             };
+        }
 
         private static async Task<Unit> ScanSync(IMediator mediator, string sourcePath, string destinationPath)
         {
@@ -102,32 +110,26 @@ namespace MX.Images
         private class CommandLine
         {
             private readonly CommandEnum _command = CommandEnum.Help;
+            private readonly string _destinationPath;
 
             private readonly string _sourcePath;
-            private readonly string _destinationPath;
 
             public CommandLine(string[] args)
             {
                 var argsQueue = new Queue<string>(args);
 
                 if (argsQueue.Any() && Enum.TryParse<CommandEnum>(argsQueue.Dequeue(), true, out var command))
-                {
                     _command = command;
-                }
 
-                if (argsQueue.Any())
-                {
-                    _sourcePath = argsQueue.Dequeue();
-                }
+                if (argsQueue.Any()) _sourcePath = argsQueue.Dequeue();
 
-                if (argsQueue.Any())
-                {
-                    _destinationPath = argsQueue.Dequeue();
-                }
+                if (argsQueue.Any()) _destinationPath = argsQueue.Dequeue();
             }
 
-            public void Deconstruct(out CommandEnum command) =>
+            public void Deconstruct(out CommandEnum command)
+            {
                 command = _command;
+            }
 
             public void Deconstruct(out CommandEnum command, out string sourcePath)
             {

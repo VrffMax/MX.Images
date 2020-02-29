@@ -68,13 +68,9 @@ namespace MX.Images.CommandHandlers.Scan
 
                 return storageImages;
             }
-
             catch (Exception exception)
             {
-                var message = $"*** Error *** {exception.Message}";
-
-                Console.WriteLine(message);
-                _state.Errors.Enqueue(message);
+                _state.Log(nameof(ScanRepositoryCommandHandler), exception.Message);
 
                 return Array.AsReadOnly(new FileModel[] { });
             }

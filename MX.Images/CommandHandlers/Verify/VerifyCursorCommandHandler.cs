@@ -35,7 +35,7 @@ namespace MX.Images.CommandHandlers.Verify
             if (verifyFailedImages.Any())
             {
                 foreach (var verifyFailedImage in verifyFailedImages)
-                    Console.WriteLine($@"*** Verify failed *** {verifyFailedImage.CopyPath}");
+                    _state.Log(nameof(VerifyCursorCommandHandler), verifyFailedImage.CopyPath);
 
                 var recopyFailedImageTasks = verifyFailedImages.Select(fileModel => new
                     {
@@ -64,13 +64,9 @@ namespace MX.Images.CommandHandlers.Verify
             {
                 File.Copy(sourceFile, destinationFile, true);
             }
-
             catch (Exception exception)
             {
-                var message = $"*** Error *** {exception.Message}";
-
-                Console.WriteLine(message);
-                _state.Errors.Enqueue(message);
+                _state.Log(nameof(VerifyCursorCommandHandler), exception.Message);
             }
 
             return Task.CompletedTask;

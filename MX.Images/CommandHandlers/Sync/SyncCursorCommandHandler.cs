@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using MX.Images.Commands.Sync;
+using MX.Images.Models;
 using MX.Images.Models.CQRS;
 using MX.Images.Models.Mongo;
 
@@ -54,6 +55,13 @@ namespace MX.Images.CommandHandlers.Sync
                 "0",
                 "0000:00:00 00:00:00"
             });
+
+        private readonly IState _state;
+
+        public SyncCursorCommandHandler(IState state)
+        {
+            _state = state;
+        }
 
         public async Task<ReadOnlyCollection<RefactorItemModel>> Handle(SyncCursorCommand request,
             CancellationToken cancellationToken)
@@ -138,7 +146,8 @@ namespace MX.Images.CommandHandlers.Sync
                     }
 
                     // Default stage
-                    Console.WriteLine($@"*** Warning *** ""{tag.Directory}"" & ""{tag.Name}"" & ""{tag.Description}""");
+                    _state.Log(nameof(SyncCursorCommandHandler),
+                        $@"""{tag.Directory}"" & ""{tag.Name}"" & ""{tag.Description}""");
 
                     return default;
                 })

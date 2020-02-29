@@ -77,13 +77,9 @@ namespace MX.Images.CommandHandlers.Sync
 
                 return Unit.Value;
             }
-
             catch (Exception exception)
             {
-                var message = $"*** Error *** {exception.Message}";
-
-                Console.WriteLine(message);
-                _state.Errors.Enqueue(message);
+                _state.Log(nameof(SyncCommandHandler), exception.Message);
 
                 return Unit.Value;
             }

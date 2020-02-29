@@ -122,13 +122,9 @@ namespace MX.Images.CommandHandlers.Sync
             {
                 File.Copy(sourceFile, destinationFile, true);
             }
-
             catch (Exception exception)
             {
-                var message = $"*** Error *** {exception.Message}";
-
-                Console.WriteLine(message);
-                _state.Errors.Enqueue(message);
+                _state.Log(nameof(SyncCopyCommandHandler), exception.Message);
             }
 
             return Task.CompletedTask;

@@ -56,11 +56,9 @@ namespace MX.Images.CommandHandlers.Scan
             }
             catch (ImageProcessingException)
             {
-                var message =
-                    $@"*** Warning *** ""{Path.GetFileName(request.File)}"" & ""{nameof(ImageProcessingException)}""";
-
-                Console.WriteLine(message);
-                _state.Errors.Enqueue(message);
+                _state.Log(
+                    nameof(ScanFileCommandHandler),
+                    $@"""{Path.GetFileName(request.File)}"" & ""{nameof(ImageProcessingException)}""");
 
                 return Task.FromResult<FileModel>(default);
             }
