@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Autofac;
 using MediatR;
 using MediatR.Extensions.Autofac.DependencyInjection;
+using MX.Images.Commands.Exclude;
 using MX.Images.Commands.Scan;
 using MX.Images.Commands.Sync;
 using MX.Images.Commands.Verify;
@@ -29,7 +30,8 @@ namespace MX.Images
             {CommandEnum.Scan, $"{MxImage} {CommandEnum.Scan} {SourcePath}"},
             {CommandEnum.Sync, $"{MxImage} {CommandEnum.Sync} {SourcePath} {DestinationPath}"},
             {CommandEnum.ScanSync, $"{MxImage} {CommandEnum.ScanSync} {SourcePath} {DestinationPath}"},
-            {CommandEnum.Verify, $"{MxImage} {CommandEnum.Verify} {SourcePath}"}
+            {CommandEnum.Verify, $"{MxImage} {CommandEnum.Verify} {SourcePath}"},
+            {CommandEnum.VerifyExclude, $"{MxImage} {CommandEnum.VerifyExclude} {SourcePath} {DestinationPath}"}
         };
 
         private static readonly IMediator Mediator;
@@ -82,6 +84,14 @@ namespace MX.Images
                 when command == CommandEnum.Verify && sourcePath.IsPath() =>
                 Mediator.Send(new VerifyCommand(sourcePath)),
 
+                var (command, sourcePath, destinationPath)
+                when command == CommandEnum.VerifyExclude && sourcePath.IsPath() && destinationPath.IsPath() =>
+                VerifyExclude(Mediator, sourcePath, destinationPath),
+
+                var (command, sourcePath, destinationPath)
+                when command == CommandEnum.Exclude && sourcePath.IsPath() && destinationPath.IsPath() =>
+                Mediator.Send(new ExcludeCommand(sourcePath, destinationPath)),
+
                 var (command)
                 when command != CommandEnum.Help => command.Help(),
 
@@ -94,6 +104,12 @@ namespace MX.Images
             await mediator.Send(new ScanCommand(sourcePath));
             await mediator.Send(new SyncCommand(sourcePath, destinationPath));
             return Unit.Value;
+        }
+
+        private static async Task VerifyExclude(IMediator mediator, string sourcePath, string destinationPath)
+        {
+            await mediator.Send(new VerifyCommand(sourcePath));
+            await mediator.Send(new ExcludeCommand(sourcePath, destinationPath));
         }
 
         private static Task<Unit> Help()
@@ -128,7 +144,9 @@ namespace MX.Images
             Scan,
             Sync,
             ScanSync,
-            Verify
+            Verify,
+            VerifyExclude,
+            Exclude
         }
 
         private class CommandLine
