@@ -27,15 +27,34 @@ namespace MX.Images.CommandHandlers.Exclude
 
         public async Task<Unit> Handle(ExcludeCursorCommand request, CancellationToken cancellationToken)
         {
-            var fileMoveTasks = request.Files.Select(file =>
+            var fileGroups = request.Files
+                .GroupBy(file => file.Path)
+                .Select(files => new
+                {
+                    Files = files,
+                    MovePath = files.Key.Replace(request.SourcePath, request.DestinationPath)
+                })
+                .ToArray();
+
+            var directoryCreateTasks = fileGroups.Select(fileGroup =>
             {
-                var fileMovePath = file.Path.Replace(request.SourcePath, request.DestinationPath);
-
-                var sourceFile = Path.Combine(file.Path, file.Name);
-                var destinationFile = Path.Combine(fileMovePath, file.Name);
-
-                return FileMove(file.Id, fileMovePath, sourceFile, destinationFile, cancellationToken);
+                Directory.CreateDirectory(fileGroup.MovePath);
+                return Task.CompletedTask;
             }).ToArray();
+
+            await Task.WhenAll(directoryCreateTasks);
+
+            var fileMoveTasks = fileGroups.SelectMany(fileGroup =>
+                    fileGroup.Files.Select(file =>
+                        {
+                            var sourceFile = Path.Combine(file.Path, file.Name);
+                            var destinationFile = Path.Combine(fileGroup.MovePath, file.Name);
+
+                            return FileMove(file.Id, fileGroup.MovePath, sourceFile, destinationFile,
+                                cancellationToken);
+                        })
+                        .ToArray())
+                .ToArray();
 
             await Task.WhenAll(fileMoveTasks);
 
@@ -47,8 +66,9 @@ namespace MX.Images.CommandHandlers.Exclude
         {
             try
             {
-                Directory.CreateDirectory(fileMovePath);
-                File.Move(sourceFile, destinationFile);
+                Console.WriteLine($"{sourceFile} -> {destinationFile}");
+
+                // File.Move(sourceFile, destinationFile);
 
                 var filter = Builders<FileModel>.Filter.Where(fileModel => fileModel.Id == id);
                 var update = Builders<FileModel>.Update.Set(fileModel => fileModel.Path, fileMovePath);
