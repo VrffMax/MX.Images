@@ -15,9 +15,9 @@ namespace MX.Images.Models
 
         public ConcurrentQueue<string> Messages { get; }
 
-        public void Log(string source, string message)
+        public void Log(string source, Exception exception)
         {
-            var text = $"{ErrorPrefix} {source} {message}";
+            var text = $"{ErrorPrefix} {source} {exception.Message}";
 
             Messages.Enqueue(text);
             Console.WriteLine(text);

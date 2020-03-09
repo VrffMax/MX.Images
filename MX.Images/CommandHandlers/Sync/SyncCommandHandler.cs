@@ -79,7 +79,7 @@ namespace MX.Images.CommandHandlers.Sync
             }
             catch (Exception exception)
             {
-                _state.Log(nameof(SyncCommandHandler), exception.Message);
+                _state.Log(nameof(SyncCommandHandler), exception);
 
                 return Unit.Value;
             }

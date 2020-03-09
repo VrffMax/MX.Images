@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 
 namespace MX.Images.Models
 {
@@ -6,6 +7,6 @@ namespace MX.Images.Models
     {
         public ConcurrentQueue<string> Messages { get; }
 
-        public void Log(string source, string message);
+        public void Log(string source, Exception exception);
     }
 }

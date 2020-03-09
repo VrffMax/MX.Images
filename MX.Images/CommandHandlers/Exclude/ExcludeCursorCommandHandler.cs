@@ -46,13 +46,7 @@ namespace MX.Images.CommandHandlers.Exclude
 
             var fileMoveTasks = fileGroups.SelectMany(fileGroup =>
                     fileGroup.Files.Select(file =>
-                        {
-                            var sourceFile = Path.Combine(file.Path, file.Name);
-                            var destinationFile = Path.Combine(fileGroup.MovePath, file.Name);
-
-                            return FileMove(file.Id, fileGroup.MovePath, sourceFile, destinationFile,
-                                cancellationToken);
-                        })
+                            FileMove(file.Id, file.Path, fileGroup.MovePath, file.Name))
                         .ToArray())
                 .ToArray();
 
@@ -61,26 +55,28 @@ namespace MX.Images.CommandHandlers.Exclude
             return Unit.Value;
         }
 
-        private Task FileMove(ObjectId id, string fileMovePath, string sourceFile, string destinationFile,
-            CancellationToken cancellationToken)
+        private async Task FileMove(ObjectId id, string path, string movePath, string name)
         {
             try
             {
-                Console.WriteLine($"{sourceFile} -> {destinationFile}");
+                var sourceFile = Path.Combine(path, name);
+                var destinationFile = Path.Combine(movePath, name);
 
-                // File.Move(sourceFile, destinationFile);
-
-                var filter = Builders<FileModel>.Filter.Where(fileModel => fileModel.Id == id);
-                var update = Builders<FileModel>.Update.Set(fileModel => fileModel.Path, fileMovePath);
-
-                _storage.Images.Value.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+                File.Move(sourceFile, destinationFile);
+                await FileUpdate(id, movePath);
             }
             catch (Exception exception)
             {
-                _state.Log(nameof(ExcludeCursorCommandHandler), exception.Message);
+                _state.Log(nameof(ExcludeCursorCommandHandler), exception);
             }
+        }
 
-            return Task.CompletedTask;
+        private Task FileUpdate(ObjectId id, string movePath)
+        {
+            var filter = Builders<FileModel>.Filter.Where(fileModel => fileModel.Id == id);
+            var update = Builders<FileModel>.Update.Set(fileModel => fileModel.Path, movePath);
+
+            return _storage.Images.Value.UpdateOneAsync(filter, update);
         }
     }
 }

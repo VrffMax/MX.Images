@@ -124,7 +124,7 @@ namespace MX.Images.CommandHandlers.Sync
             }
             catch (Exception exception)
             {
-                _state.Log(nameof(SyncCopyCommandHandler), exception.Message);
+                _state.Log(nameof(SyncCopyCommandHandler), exception);
             }
 
             return Task.CompletedTask;

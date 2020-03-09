@@ -66,7 +66,7 @@ namespace MX.Images.CommandHandlers.Exclude
             }
             catch (Exception exception)
             {
-                _state.Log(nameof(ExcludeCommandHandler), exception.Message);
+                _state.Log(nameof(ExcludeCommandHandler), exception);
 
                 return Unit.Value;
             }

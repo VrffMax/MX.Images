@@ -147,7 +147,7 @@ namespace MX.Images.CommandHandlers.Sync
 
                     // Default stage
                     _state.Log(nameof(SyncCursorCommandHandler),
-                        $@"""{tag.Directory}"" & ""{tag.Name}"" & ""{tag.Description}""");
+                        new ApplicationException($@"""{tag.Directory}"" & ""{tag.Name}"" & ""{tag.Description}"""));
 
                     return default;
                 })

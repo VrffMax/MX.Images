@@ -70,7 +70,7 @@ namespace MX.Images.CommandHandlers.Scan
             }
             catch (Exception exception)
             {
-                _state.Log(nameof(ScanRepositoryCommandHandler), exception.Message);
+                _state.Log(nameof(ScanRepositoryCommandHandler), exception);
 
                 return Array.AsReadOnly(new FileModel[] { });
             }

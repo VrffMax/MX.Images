@@ -65,7 +65,7 @@ namespace MX.Images.CommandHandlers.Verify
             }
             catch (Exception exception)
             {
-                _state.Log(nameof(VerifyCommandHandler), exception.Message);
+                _state.Log(nameof(VerifyCommandHandler), exception);
 
                 return Unit.Value;
             }
