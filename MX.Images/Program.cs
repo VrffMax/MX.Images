@@ -109,6 +109,13 @@ namespace MX.Images
         private static async Task VerifyExclude(IMediator mediator, string sourcePath, string destinationPath)
         {
             await mediator.Send(new VerifyCommand(sourcePath));
+
+            if (State.Messages.Any())
+            {
+                Console.WriteLine("No exclude");
+                return;
+            }
+
             await mediator.Send(new ExcludeCommand(sourcePath, destinationPath));
         }
 

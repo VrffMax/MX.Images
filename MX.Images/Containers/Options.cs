@@ -18,7 +18,8 @@ namespace MX.Images.Containers
                 "*.jpg",
                 "*.jpeg",
                 "*.png",
-                "*.gif"
+                "*.gif",
+                "*.bmp"
             });
         }
 
