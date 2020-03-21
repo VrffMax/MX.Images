@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MX.Images Help": {
+      "commandName": "Project",
+      "commandLineArgs": "Help"
+    }
+  }
+}

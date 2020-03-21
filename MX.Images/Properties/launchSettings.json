@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "MX.Images": {
-      "commandName": "Project",
-      "commandLineArgs": "Verify C:\\Users\\Maxim\\YandexDisk\\PhotoMax\\Фотографии"
-    }
-  }
-}

@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <RootNamespace>MX.Images</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " />
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' " />
+    <ItemGroup>
+        <PackageReference Include="Autofac" Version="5.1.2" />
+        <PackageReference Include="MediatR.Extensions.Autofac.DependencyInjection" Version="5.1.0" />
+        <PackageReference Include="MetadataExtractor" Version="2.3.0" />
+        <PackageReference Include="MongoDB.Driver" Version="2.10.2" />
+    </ItemGroup>
+
+</Project>
