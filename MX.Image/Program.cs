@@ -43,8 +43,8 @@ namespace MX.Images
 
             builder.RegisterInstance(new Options()).As<IOptions>();
             builder.RegisterInstance(new State()).As<IState>();
+            builder.RegisterMediatR(typeof(Program).Assembly);
             builder.RegisterType<Storage>().As<IStorage>();
-            builder.AddMediatR(typeof(Program).Assembly);
 
             var container = builder.Build();
 

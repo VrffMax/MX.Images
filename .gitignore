@@ -2,3 +2,5 @@ bin/
 obj/
 /packages/
 /.vs/MX
+/.vs/MX.Image
+/MX.Image/.vs/MX.Image

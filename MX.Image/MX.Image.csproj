@@ -9,10 +9,10 @@
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " />
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' " />
     <ItemGroup>
-        <PackageReference Include="Autofac" Version="5.1.2" />
-        <PackageReference Include="MediatR.Extensions.Autofac.DependencyInjection" Version="5.1.0" />
-        <PackageReference Include="MetadataExtractor" Version="2.3.0" />
-        <PackageReference Include="MongoDB.Driver" Version="2.10.2" />
+        <PackageReference Include="Autofac" Version="6.1.0" />
+        <PackageReference Include="MediatR.Extensions.Autofac.DependencyInjection" Version="7.0.0" />
+        <PackageReference Include="MetadataExtractor" Version="2.4.3" />
+        <PackageReference Include="MongoDB.Driver" Version="2.11.5" />
     </ItemGroup>
 
 </Project>
