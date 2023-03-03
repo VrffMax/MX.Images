@@ -12,7 +12,7 @@
         <PackageReference Include="Autofac" Version="6.1.0" />
         <PackageReference Include="MediatR.Extensions.Autofac.DependencyInjection" Version="7.0.0" />
         <PackageReference Include="MetadataExtractor" Version="2.4.3" />
-        <PackageReference Include="MongoDB.Driver" Version="2.11.5" />
+        <PackageReference Include="MongoDB.Driver" Version="2.19.0" />
     </ItemGroup>
 
 </Project>
